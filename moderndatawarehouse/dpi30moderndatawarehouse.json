@@ -41,12 +41,12 @@
         "managedResourceGroupName": "[concat('databricks-rg-', parameters('databricksWorkspaceName'), '-', uniqueString(parameters('databricksWorkspaceName'), resourceGroup().id))]"
     },
     "resources": [
-        /* Deploy the Data Factory */
         {
+            "comments": "Deploy the Data Factory, Use East US no matter what as Data Factory location does not matter",
             "type": "Microsoft.DataFactory/factories",
             "apiVersion": "2018-06-01",
             "name": "[parameters('dataFactoryName')]",
-            "location": "East US", /* Use East US no matter what as Data Factory location does not matter */
+            "location": "East US",
             "tags": {
                 "dpi30": "True"
             },
@@ -55,8 +55,8 @@
             },
             "properties": {}
         },
-        /* Deploy the SQL Azure Logical server to hold our DW */
         {
+            "comments": "Deploy the SQL Azure Logical server to hold our DW",
             "type": "Microsoft.Sql/servers",
             "apiVersion": "2015-05-01-preview",
             "name": "[parameters('azureSqlServerName')]",
@@ -71,8 +71,8 @@
                 "version": "12.0"
             }
         },
-        /* Deploy the storage account with Data Lake (isHnsEnabled = true) */
         {
+            "comments": "Deploy the storage account with Data Lake (isHnsEnabled = true)",
             "type": "Microsoft.Storage/storageAccounts",
             "apiVersion": "2019-04-01",
             "name": "[parameters('storageAccountName')]",
@@ -108,8 +108,8 @@
                 "accessTier": "Hot"
             }
         },
-        /* Deploy Azure Synapse (Azure Data Warehouse). DW200c was chose to get full mpp work load testing. */
         {
+            "comments": "Deploy Azure Synapse (Azure Data Warehouse). DW200c was chose to get full mpp work load testing.",
             "type": "Microsoft.Sql/servers/databases",
             "apiVersion": "2017-10-01-preview",
             "name": "[concat(parameters('azureSqlServerName'), '/', parameters('azureSqlDataWarehouseName'))]",
@@ -133,8 +133,8 @@
                 "readReplicaCount": 0
             }
         },
-        /* Firewall rules to Allow Azure services to access the DW */
         {
+            "comments": "Firewall rules to Allow Azure services to access the DW",
             "type": "Microsoft.Sql/servers/firewallRules",
             "apiVersion": "2015-05-01-preview",
             "name": "[concat(parameters('azureSqlServerName'), '/AllowAllWindowsAzureIps')]",
@@ -146,8 +146,8 @@
                 "endIpAddress": "0.0.0.0"
             }
         },
-        /* Enabling blob access to the data lake */
         {
+            "comments": "Enabling blob access to the data lake",
             "type": "Microsoft.Storage/storageAccounts/blobServices",
             "apiVersion": "2019-04-01",
             "name": "[concat(parameters('storageAccountName'), '/default')]",
@@ -166,9 +166,8 @@
                 }
             }
         },
-        /* Creating the Databricks workspace, you will need to build you own clusters after this.
-        Premium is enabled to allow for Pass-Through authentication to Data Lake and full RBAC */
         {
+            "comments": "Creating the Databricks workspace, you will need to build you own clusters after this. Premium is enabled to allow for Pass-Through authentication to Data Lake and full RBAC",
             "type": "Microsoft.Databricks/workspaces",
             "apiVersion": "2018-04-01",
             "name": "[parameters('databricksWorkspaceName')]",

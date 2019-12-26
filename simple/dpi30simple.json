@@ -34,12 +34,12 @@
     },
     "variables": {},
     "resources": [
-        /* Deploy the Data Factory */
         {
+            "comments": "Deploy the Data Factory, Use East US no matter what as Data Factory location does not matter",
             "type": "Microsoft.DataFactory/factories",
             "apiVersion": "2018-06-01",
             "name": "[parameters('dataFactoryName')]",
-            "location": "East US", /* Use East US no matter what as Data Factory location does not matter */
+            "location": "East US",
             "tags": {
                 "dpi30": "True"
             },
@@ -49,6 +49,7 @@
             "properties": {}
         },
         {
+            "comments": "Deploy the SQL Azure Logical server to hold our Database",
             "type": "Microsoft.Sql/servers",
             "apiVersion": "2015-05-01-preview",
             "name": "[parameters('azureSqlServerName')]",
@@ -64,6 +65,7 @@
             }
         },
         {
+            "comments": "Deploy the storage account, in this situation we are using normal blob storage to allow for Azure SQL Bulk Insert",
             "type": "Microsoft.Storage/storageAccounts",
             "apiVersion": "2019-04-01",
             "name": "[parameters('storageAccountName')]",
@@ -100,6 +102,7 @@
             }
         },
         {
+            "comments": "Deploy a 2 core Gen 5 database to hold our BI data",
             "type": "Microsoft.Sql/servers/databases",
             "apiVersion": "2019-06-01-preview",
             "name": "[concat(parameters('azureSqlServerName'), '/', parameters('azureSqlDatabaseName'))]",
@@ -127,6 +130,7 @@
             }
         },
         {
+            "comments": "Firewall rules to Allow Azure services to access the DW",
             "type": "Microsoft.Sql/servers/firewallRules",
             "apiVersion": "2015-05-01-preview",
             "name": "[concat(parameters('azureSqlServerName'), '/AllowAllWindowsAzureIps')]",
@@ -139,6 +143,7 @@
             }
         },
         {
+            "comments": "Enable blob access to our Storage Account",
             "type": "Microsoft.Storage/storageAccounts/blobServices",
             "apiVersion": "2019-04-01",
             "name": "[concat(parameters('storageAccountName'), '/default')]",
