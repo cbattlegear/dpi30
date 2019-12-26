@@ -1,1 +1,20 @@
-[![Deploy to Azure](https://azurecomcdn.azureedge.net/mediahandler/acomblog/media/Default/blog/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcbattlegear%2Fdpi30%2Fmaster%2Fsimple%2Fdpi30simple.json)
+# DPi30 Simple Deployment Template
+This template is for smaller data estates that just need a place to consolidate their data into one place for reporting. 
+
+It will deploy: 
+* SQL Azure Database (Gen 5 2 Cores)
+* Azure Storage Account (Blob Storage)
+* Data Factory
+
+## Getting Started
+To deploy the DPi30 Simple Template click the button below and fill in the required information.
+
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcbattlegear%2Fdpi30%2Fmaster%2Fsimple%2Fdpi30simple.json" target ="_blank">
+    <img src="https://azurecomcdn.azureedge.net/mediahandler/acomblog/media/Default/blog/deploybutton.png"></img>
+</a>
+
+## Next Steps
+After deploying the simple template you will want to start getting data into your database. Here a few links to help you get started:
+* [Copy data from an on-premises SQL Server database to Azure Blob storage](https://docs.microsoft.com/en-us/azure/data-factory/tutorial-hybrid-copy-portal)
+* [Copy data from Azure Blob storage to a SQL database by using Azure Data Factory](https://docs.microsoft.com/en-us/azure/data-factory/tutorial-copy-data-portal)
+* [Columnstore Indexes](https://docs.microsoft.com/en-us/sql/relational-databases/indexes/columnstore-indexes-overview?view=sql-server-ver15)
