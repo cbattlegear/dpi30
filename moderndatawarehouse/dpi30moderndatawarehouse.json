@@ -2,12 +2,12 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "0.0.0.1",
     "metadata": {
-        "comments": "This template can be used to quickly deploy a simplified Data Platform, it will deploy a Data Factory, Blob Storage account, and SQL Azure Database. This allows for a simplified starting point to do analytics on your data.",
+        "comments": "This template can be used to quickly deploy a basic modern data warehouse architecture as outlined here: https://docs.microsoft.com/en-us/azure/architecture/solution-ideas/articles/modern-data-warehouse. At this point Azure Analysis Services is not part of the template as Power BI can handle most of the features directly. This will deploy Azure Synapse Analytics, Data Lake, Databricks, and Data Factory.",
         "author": "Cameron Battagler"
     },
     "parameters": {
         "azureSqlServerName": {
-            "defaultValue": "dpi30simple",
+            "defaultValue": "dpi30mdw",
             "type": "String",
             "metadata": {
                 "description": "Azure SQL Logical Server Name"
@@ -19,20 +19,27 @@
         "azureSqlServerAdminPassword": {
             "type": "SecureString"
         },
-        "azureSqlDatabaseName": {
-            "defaultValue": "dpi30simpledatabase",
+        "azureSqlDataWarehouseName": {
+            "defaultValue": "dpi30mdw",
+            "type": "String"
+        },
+        "databricksWorkspaceName": {
+            "defaultValue": "dpi30mdw",
             "type": "String"
         },
         "storageAccountName": {
-            "defaultValue": "dpi30simple",
+            "defaultValue": "dpi30mdw",
             "type": "String"
         },
         "dataFactoryName": {
-            "defaultValue": "dpi30simple",
+            "defaultValue": "dpi30mdw",
             "type": "String"
         }
     },
-    "variables": {},
+    "variables": {
+        "managedResourceGroupId": "[concat(subscription().id, '/resourceGroups/', variables('managedResourceGroupName'))]",
+        "managedResourceGroupName": "[concat('databricks-rg-', parameters('databricksWorkspaceName'), '-', uniqueString(parameters('databricksWorkspaceName'), resourceGroup().id))]"
+    },
     "resources": [
         /* Deploy the Data Factory */
         {
@@ -48,6 +55,7 @@
             },
             "properties": {}
         },
+        /* Deploy the SQL Azure Logical server to hold our DW */
         {
             "type": "Microsoft.Sql/servers",
             "apiVersion": "2015-05-01-preview",
@@ -63,6 +71,7 @@
                 "version": "12.0"
             }
         },
+        /* Deploy the storage account with Data Lake (isHnsEnabled = true) */
         {
             "type": "Microsoft.Storage/storageAccounts",
             "apiVersion": "2019-04-01",
@@ -77,7 +86,7 @@
             },
             "kind": "StorageV2",
             "properties": {
-                "isHnsEnabled": false,
+                "isHnsEnabled": true,
                 "networkAcls": {
                     "bypass": "AzureServices",
                     "virtualNetworkRules": [],
@@ -99,10 +108,11 @@
                 "accessTier": "Hot"
             }
         },
+        /* Deploy Azure Synapse (Azure Data Warehouse). DW200c was chose to get full mpp work load testing. */
         {
             "type": "Microsoft.Sql/servers/databases",
-            "apiVersion": "2019-06-01-preview",
-            "name": "[concat(parameters('azureSqlServerName'), '/', parameters('azureSqlDatabaseName'))]",
+            "apiVersion": "2017-10-01-preview",
+            "name": "[concat(parameters('azureSqlServerName'), '/', parameters('azureSqlDataWarehouseName'))]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
                 "[resourceId('Microsoft.Sql/servers', parameters('azureSqlServerName'))]"
@@ -111,21 +121,19 @@
                 "dpi30": "True"
             },
             "sku": {
-                "name": "GP_Gen5",
-                "tier": "GeneralPurpose",
-                "family": "Gen5",
-                "capacity": 2
+                "name": "DW200c",
+                "tier": "DataWarehouse"
             },
-            "kind": "v12.0,user,vcore",
+            "kind": "v12.0,user,datawarehouse,gen2",
             "properties": {
                 "collation": "SQL_Latin1_General_CP1_CI_AS",
-                "maxSizeBytes": 268435456000,
+                "maxSizeBytes": 263882790666240,
                 "zoneRedundant": false,
-                "licenseType": "BasePrice",
                 "readScale": "Disabled",
                 "readReplicaCount": 0
             }
         },
+        /* Firewall rules to Allow Azure services to access the DW */
         {
             "type": "Microsoft.Sql/servers/firewallRules",
             "apiVersion": "2015-05-01-preview",
@@ -138,6 +146,7 @@
                 "endIpAddress": "0.0.0.0"
             }
         },
+        /* Enabling blob access to the data lake */
         {
             "type": "Microsoft.Storage/storageAccounts/blobServices",
             "apiVersion": "2019-04-01",
@@ -155,6 +164,23 @@
                 "deleteRetentionPolicy": {
                     "enabled": false
                 }
+            }
+        },
+        /* Creating the Databricks workspace, you will need to build you own clusters after this.
+        Premium is enabled to allow for Pass-Through authentication to Data Lake and full RBAC */
+        {
+            "type": "Microsoft.Databricks/workspaces",
+            "apiVersion": "2018-04-01",
+            "name": "[parameters('databricksWorkspaceName')]",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "dpi30": "True"
+            },
+            "sku": {
+                "name": "premium"
+            },
+            "properties": {
+                "ManagedResourceGroupId": "[variables('managedResourceGroupId')]"
             }
         }
     ]
