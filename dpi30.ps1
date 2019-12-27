@@ -50,16 +50,30 @@ function DeployResourceGroup {
     Clear-Host
     # Gathers all US based regions that can deploy SQL and Databricks
     # TODO: Determine best way to allow this to be international
-    $locationlist = ((Get-AzLocation | Where-Object Providers -like "Microsoft.Databricks" | Where-Object Providers -like "Microsoft.Sql" | Where-Object DisplayName -like "* US*").DisplayName)
+    
     Write-Host "First, let's create a Resource Group to put all these services in."
     $ResourceGroupName = Read-Host "What would you like the Resource Group named"
-    Write-Host "Here are the regions availble for deployment: "
-    Write-Host $locationlist -Separator ", "
-    Write-Host "Which region would you like the Resource Group in"
-    $rglocation = Read-Host
-    New-AzResourceGroup -Name $ResourceGroupName -Location $rglocation -Tag @{dpi30="True"} | Out-Null
-    Write-Host "Your new Resource Group $ResourceGroupName has been deployed."
-    return $ResourceGroupName
+    $ExistingResourceGroup = Get-AzResourceGroup -ResourceGroupName $ResourceGroupName -ErrorVariable notPresent -ErrorAction SilentlyContinue
+    if($notPresent) {
+        $locationlist = ((Get-AzLocation | Where-Object Providers -like "Microsoft.Databricks" | Where-Object Providers -like "Microsoft.Sql" | Where-Object DisplayName -like "* US*").DisplayName)
+        Write-Host "Here are the regions availble for deployment: "
+        Write-Host $locationlist -Separator ", "
+        Write-Host "Which region would you like the Resource Group in"
+        $rglocation = Read-Host
+        New-AzResourceGroup -Name $ResourceGroupName -Location $rglocation -Tag @{dpi30="True"} | Out-Null
+        Write-Host "Your new Resource Group $ResourceGroupName has been deployed."
+        return $ResourceGroupName
+    } else {
+        Write-Host "That resource group already exists in $($ExistingResourceGroup.Location)"
+        $confirmation = Read-Host "Would you like to use the existing Resource Group? (y/n)"
+        if ($confirmation -eq 'y') {
+            return $ResourceGroupName
+        } else {
+            Write-Host "Ok, let's start this part over"
+            $ResourceGroupName = DeployResourceGroup
+            return $ResourceGroupName
+        }
+    }
 }
 
 function DeployDWTemplate {
