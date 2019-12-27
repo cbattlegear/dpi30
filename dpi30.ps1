@@ -10,27 +10,27 @@ function DetermineTemplate {
     $dwscore = 0
     Write-Host "Let's determine the best deployment for your situation, Please answer the next few questions with y (yes) or n (no)."
 
-    $confirmation = Read-Host "Will you have more that 1 TB of data? (y/n):"
+    $confirmation = Read-Host "Will you have more that 1 TB of data? (y/n)"
     if ($confirmation -eq "y") {
         $dwscore++
     }
 
-    $confirmation = Read-Host "Do you have a highly analytics based workload? (y/n):"
+    $confirmation = Read-Host "Do you have a highly analytics based workload? (y/n)"
     if ($confirmation -eq "y") {
         $dwscore++
     }
 
-    $confirmation = Read-Host "Do you want to utilize any real-time or streaming data? (y/n):"
+    $confirmation = Read-Host "Do you want to utilize any real-time or streaming data? (y/n)"
     if ($confirmation -eq "y") {
         $dwscore++
     }
 
-    $confirmation = Read-Host "Would you like to integrate machine learning into your business intelligence? (y/n):"
+    $confirmation = Read-Host "Would you like to integrate machine learning into your business intelligence? (y/n)"
     if ($confirmation -eq "y") {
         $dwscore++
     }
 
-    $confirmation = Read-Host "Do you have Python, Scala, R, or Spark experience? (y/n):"
+    $confirmation = Read-Host "Do you have Python, Scala, R, or Spark experience? (y/n)"
     if ($confirmation -eq "y") {
         $dwscore++
     }
@@ -43,11 +43,12 @@ function DetermineTemplate {
 }
 
 function Deploy-ResourceGroup {
+    $locationlist = ((Get-AzLocation | Where-Object Providers -like "Microsoft.Databricks" | Where-Object Providers -like "Microsoft.Sql" | Where-Object DisplayName -like "* US*").DisplayName)
     Write-Host "First, let's create a Resource Group to put all these services in."
-    $rgname = Read-Host "What would you like the Resource Group named?"
-    Write-Host "Which region would you like the Resource Group in?"
-    Write-Host "You can select from: "
-    Write-Host ((Get-AzLocation | Where-Object Providers -like "Microsoft.Databricks" | Where-Object Providers -like "Microsoft.Sql" | Where-Object DisplayName -like "* US*").DisplayName) -Separator ", "
+    $rgname = Read-Host "What would you like the Resource Group named"
+    Write-Host "Here are the regions availble for deployment: "
+    Write-Host $locationlist -Separator ", "
+    Write-Host "Which region would you like the Resource Group in"
     $rglocation = Read-Host
     New-AzResourceGroup -Name $rgname -Location $rglocation -Tag @{dpi30="True"}
     Write-Host "Your new Resource Group $rgname has been deployed."
@@ -121,20 +122,19 @@ Clear-Host
 Write-Host "Welcome to the DPi30 Deployment Wizard!"
 Write-Host "Before we get started, is this the correct Azure Subscription:" 
 Write-Host (Get-AzContext).Subscription.Name -ForegroundColor Yellow
-$confirmation = Read-Host "(y/n):"
+$confirmation = Read-Host "(y/n)"
 if ($confirmation -eq "y") {
     if (DetermineTemplate) {
         Write-Host $datawarehousedescription
-        $confirmation = Read-Host "Would you like to continue? (y/n):"
+        $confirmation = Read-Host "Would you like to continue? (y/n)"
         if ($confirmation -eq "y") {
-            $ResourceGroupName = Deploy-ResourceGroup
-            Deploy-DWTemplate -ResourceGroupName $ResourceGroupName
+            Deploy-Template -template "datawarehouse"
         } else {
             exit
         }
     } else {
         Write-Host $simpledescription
-        $confirmation = Read-Host "Would you like to continue? (y/n):"
+        $confirmation = Read-Host "Would you like to continue? (y/n)"
         if ($confirmation -eq "y") {
 
         } else {
