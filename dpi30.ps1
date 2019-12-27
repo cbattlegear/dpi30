@@ -8,6 +8,7 @@ Script that will walk you through determining the proper DPi30 Template and help
 
 function DetermineTemplate {
     $dwscore = 0
+    Clear-Host
     Write-Host "Let's determine the best deployment for your situation, Please answer the next few questions with y (yes) or n (no)."
 
     $confirmation = Read-Host "Will you have more that 1 TB of data? (y/n)"
@@ -43,6 +44,7 @@ function DetermineTemplate {
 }
 
 function Deploy-ResourceGroup {
+    Clear-Host
     $locationlist = ((Get-AzLocation | Where-Object Providers -like "Microsoft.Databricks" | Where-Object Providers -like "Microsoft.Sql" | Where-Object DisplayName -like "* US*").DisplayName)
     Write-Host "First, let's create a Resource Group to put all these services in."
     $rgname = Read-Host "What would you like the Resource Group named"
@@ -50,24 +52,25 @@ function Deploy-ResourceGroup {
     Write-Host $locationlist -Separator ", "
     Write-Host "Which region would you like the Resource Group in"
     $rglocation = Read-Host
-    New-AzResourceGroup -Name $rgname -Location $rglocation -Tag @{dpi30="True"}
+    $resourcegroup = New-AzResourceGroup -Name $rgname -Location $rglocation -Tag @{dpi30="True"}
     Write-Host "Your new Resource Group $rgname has been deployed."
     return $rgname
 }
 
 function Deploy-DWTemplate {
-    Param($ResourceGroupName)
+    Param($rgname)
+    Clear-Host
     Write-Host "Now let's get the Modern Data Warehouse template deployed, just a few questions and we can get this kicked off."
     $dbservername = Read-Host "What would you like to name the Database Server?"
     $dbadminlogin = Read-Host "What username would you like to use for the Database Server?"
-    $dbadminpassword = Read-Host "Password:" -AsSecureString
+    $dbadminpassword = Read-Host "Password" -AsSecureString
     $dwname = Read-Host "What would you like to name the Data Warehouse?"
     $databricksname = Read-Host "What would you like to name the Databricks Workspace?"
     $storagename = Read-Host "What would you like to name the Data Lake storage account?"
     $dfname = Read-Host "What would you like to name the Data Factory?"
     Write-Host "Ok! That's everything, the deployment will take a few minutes, to confirm:"
     $confirmtext = @"
-    Resource Group Name:             $ResourceGroupName
+    Resource Group Name:             $rgname
     Datawarehouse Server Name:       $dbservername
     Datawarehouse Server Login:      $dbadminlogin
     Datawarehouse Name:              $dwname
@@ -76,25 +79,25 @@ function Deploy-DWTemplate {
     Data Factory Name:               $dfname
 
     To re-run in case of failure you can use:
-    New-AzResourceGroupDeployment -ResourceGroupName `"$ResourceGroupName`" -TemplateFile `"dpi30\moderndatawarehouse\dpi30moderndatawarehouse.json`" -azureSqlServerName `"$dbservername`" -azureSqlServerAdminLogin `"$dbadminlogin`" -azureSqlServerAdminPassword `"$dbadminpassword`" -azureSqlDataWarehouseName `"$dwname`" -databricksWorkspaceName `"$databricksname`" -storageAccountName `"$storagename`" -dataFactoryName `"$dfname`"
+    New-AzResourceGroupDeployment -ResourceGroupName `"$rgname`" -TemplateFile `"dpi30\moderndatawarehouse\dpi30moderndatawarehouse.json`" -azureSqlServerName `"$dbservername`" -azureSqlServerAdminLogin `"$dbadminlogin`" -azureSqlDataWarehouseName `"$dwname`" -databricksWorkspaceName `"$databricksname`" -storageAccountName `"$storagename`" -dataFactoryName `"$dfname`"
 "@
     Write-Host $confirmtext
     $confirmation = Read-Host "Do you wish to continue? (y/n)"
     if ($confirmation -eq "y") {
         Write-Host "Deploying Template..."
-        New-AzResourceGroupDeployment -ResourceGroupName $ResourceGroupName -TemplateFile dpi30\moderndatawarehouse\dpi30moderndatawarehouse.json -azureSqlServerName $dbservername -azureSqlServerAdminLogin $dbadminlogin -azureSqlServerAdminPassword $dbadminpassword -azureSqlDataWarehouseName $dwname -databricksWorkspaceName $databricksname -storageAccountName $storagename -dataFactoryName $dfname
+        New-AzResourceGroupDeployment -ResourceGroupName $rgname -TemplateFile dpi30\moderndatawarehouse\dpi30moderndatawarehouse.json -azureSqlServerName $dbservername -azureSqlServerAdminLogin $dbadminlogin -azureSqlServerAdminPassword $dbadminpassword -azureSqlDataWarehouseName $dwname -databricksWorkspaceName $databricksname -storageAccountName $storagename -dataFactoryName $dfname
     }
 }
 
 function Deploy-SimpleTemplate {
-    Param($ResourceGroupName)
+    Param($rgname)
 }
 
 function Deploy-Template {
     Param($template)
     $rgname = Deploy-ResourceGroup
     if ($template -eq "datawarehouse") {
-        Deploy-DWTemplate -ResourceGroupName $rgname
+        Deploy-DWTemplate -rgname $rgname
     }
     if ($template -eq "simple") {
         Deploy-SimpleTemplate
