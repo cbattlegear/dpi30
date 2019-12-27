@@ -8,3 +8,11 @@ If you know what path you want to do right away go directly to either the simple
 
 * [Simple Deployment](simple/)
 * [Modern Data Warehouse Deployment](moderndatawarehouse/)
+
+If you are unsure which to choose you can use the Decision Tree and Deployment powershell script that will help you decide and deploy the best template.
+
+### Using the Decsion Tree and Deployment Powershell script
+1. [Open Azure Cloud Shell in your Azure Portal](https://docs.microsoft.com/en-us/azure/cloud-shell/quickstart-powershell#start-cloud-shell)
+2. Run `cd ~`
+3. Clone the repository with: `git clone https://github.com/cbattlegear/dpi30.git`
+4. Run the powershell script with `./dpi30/dpi30.ps1`
