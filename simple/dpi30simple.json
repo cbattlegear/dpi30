@@ -7,29 +7,40 @@
     },
     "parameters": {
         "azureSqlServerName": {
-            "defaultValue": "dpi30simple",
             "type": "String",
             "metadata": {
-                "description": "Azure SQL Logical Server Name"
+                "description": "Azure SQL Logical Server Name (Will become the fully qualified domain name of your Database)"
             }
         },
         "azureSqlServerAdminLogin": {
-            "type": "String"
+            "type": "String",
+            "metadata": {
+                "description": "Azure SQL Logical Server Admin User Name (will be used for initial login to your Database)"
+            }
         },
         "azureSqlServerAdminPassword": {
-            "type": "SecureString"
+            "type": "SecureString",
+            "metadata": {
+                "description": "Azure SQL Logical Server Admin Password (will be used for initial login to your Database)"
+            }
         },
         "azureSqlDatabaseName": {
-            "defaultValue": "dpi30simpledatabase",
-            "type": "String"
+            "type": "String",
+            "metadata": {
+                "description": "Azure SQL Database Name (Will be displayed in SSMS and to connect with other tools)"
+            }
         },
         "storageAccountName": {
-            "defaultValue": "dpi30simple",
-            "type": "String"
+            "type": "String",
+            "metadata": {
+                "description": "The storage account name for your blob storage (Will become part of the fully qualified domain name of your blob storage)"
+            }
         },
         "dataFactoryName": {
-            "defaultValue": "dpi30simple",
-            "type": "String"
+            "type": "String",
+            "metadata": {
+                "description": "The data facory name (will be displayed in the Azure Portal)"
+            }
         }
     },
     "variables": {},

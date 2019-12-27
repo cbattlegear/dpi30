@@ -7,33 +7,46 @@
     },
     "parameters": {
         "azureSqlServerName": {
-            "defaultValue": "dpi30mdw",
             "type": "String",
             "metadata": {
-                "description": "Azure SQL Logical Server Name"
+                "description": "Azure SQL Logical Server Name (Will become the fully qualified domain name of your Data Warehouse)"
             }
         },
         "azureSqlServerAdminLogin": {
-            "type": "String"
+            "type": "String",
+            "metadata": {
+                "description": "Azure SQL Logical Server Admin User Name (will be used for initial login to your Data Warehouse)"
+            }
         },
         "azureSqlServerAdminPassword": {
-            "type": "SecureString"
+            "type": "SecureString",
+            "metadata": {
+                "description": "Azure SQL Logical Server Admin Password (will be used for initial login to your Data Warehouse)"
+            }
         },
         "azureSqlDataWarehouseName": {
-            "defaultValue": "dpi30mdw",
-            "type": "String"
+            "type": "String",
+            "metadata": {
+                "description": "Azure Date Warehouse Name (Will be displayed in SSMS and to connect with other tools)"
+            }
         },
         "databricksWorkspaceName": {
-            "defaultValue": "dpi30mdw",
-            "type": "String"
+            "type": "String",
+            "metadata": {
+                "description": "The workspace name for Databricks (Will be displayed in the portal)"
+            }
         },
         "storageAccountName": {
-            "defaultValue": "dpi30mdw",
-            "type": "String"
+            "type": "String",
+            "metadata": {
+                "description": "The storage account name for your Data Lake (Will become part of the fully qualified domain name of your Data Lake)"
+            }
         },
         "dataFactoryName": {
-            "defaultValue": "dpi30mdw",
-            "type": "String"
+            "type": "String",
+            "metadata": {
+                "description": "The data facory name (will be displayed in the Azure Portal)"
+            }
         }
     },
     "variables": {
@@ -42,7 +55,7 @@
     },
     "resources": [
         {
-            "comments": "Deploy the Data Factory, Use East US no matter what as Data Factory location does not matter",
+            "comments": "Deploy the Data Factory, Use East US no matter what as Data Factory location does not matter TODO: Determine best method to use this globally",
             "type": "Microsoft.DataFactory/factories",
             "apiVersion": "2018-06-01",
             "name": "[parameters('dataFactoryName')]",
