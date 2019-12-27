@@ -4,7 +4,7 @@ This template is for smaller data estates that just need a place to consolidate 
 It will deploy: 
 * SQL Azure Database (Gen 5 2 Cores)
 * Azure Storage Account (Blob Storage)
-* Data Factory
+* Azure Data Factory
 
 ## Getting Started
 To deploy the DPi30 Simple Template click the button below and fill in the required information.

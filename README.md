@@ -5,3 +5,6 @@ Data Platform in 30 Days (DPi30) is designed to help you create a data platform 
 ## Getting Started
 
 If you know what path you want to do right away go directly to either the simple deployment or Modern Data Warehouse deployment. From there you can use the deploy template button to get everything up and running.
+
+* [Simple Deployment](simple/)
+* [Modern Data Warehouse Deployment](moderndatawarehouse/)
