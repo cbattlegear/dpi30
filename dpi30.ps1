@@ -91,6 +91,32 @@ function Deploy-DWTemplate {
 
 function Deploy-SimpleTemplate {
     Param($rgname)
+    Clear-Host
+    Write-Host "Now let's get the Simple template deployed, just a few questions and we can get this kicked off."
+    $dbservername = Read-Host "What would you like to name the Database Server?"
+    $dbadminlogin = Read-Host "What username would you like to use for the Database Server?"
+    $dbadminpassword = Read-Host "Password" -AsSecureString
+    $dbname = Read-Host "What would you like to name the Database?"
+    $storagename = Read-Host "What would you like to name the Blob storage account?"
+    $dfname = Read-Host "What would you like to name the Data Factory?"
+    Write-Host "Ok! That's everything, the deployment will take a few minutes, to confirm:"
+    $confirmtext = @"
+    Resource Group Name:             $rgname
+    Database Server Name:            $dbservername
+    Database Server Login:           $dbadminlogin
+    Database Name:                   $dwname
+    Blob Storage Account Name:       $storagename
+    Data Factory Name:               $dfname
+
+    To re-run in case of failure you can use:
+    New-AzResourceGroupDeployment -ResourceGroupName `"$rgname`" -TemplateFile `"dpi30\simple\dpi30simple.json`" -azureSqlServerName `"$dbservername`" -azureSqlServerAdminLogin `"$dbadminlogin`" -azureSqlDatabaseName `"$dwname`" -storageAccountName `"$storagename`" -dataFactoryName `"$dfname`"
+"@
+    Write-Host $confirmtext
+    $confirmation = Read-Host "Do you wish to continue? (y/n)"
+    if ($confirmation -eq "y") {
+        Write-Host "Deploying Template..."
+        New-AzResourceGroupDeployment -ResourceGroupName $rgname -TemplateFile dpi30\simple\dpi30simple.json -azureSqlServerName $dbservername -azureSqlServerAdminLogin $dbadminlogin -azureSqlServerAdminPassword $dbadminpassword -azureSqlDataWarehouseName $dwname -storageAccountName $storagename -dataFactoryName $dfname
+    }
 }
 
 function Deploy-Template {
