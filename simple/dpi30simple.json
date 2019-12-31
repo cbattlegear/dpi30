@@ -74,7 +74,7 @@
         {
             "comments": "Deploy the SQL Azure Logical server to hold our Database",
             "type": "Microsoft.Sql/servers",
-            "apiVersion": "2018-06-01",
+            "apiVersion": "2015-05-01-preview",
             "name": "[parameters('azureSqlServerName')]",
             "location": "[resourceGroup().location]",
             "tags": {
@@ -153,7 +153,7 @@
         {
             "comments": "Firewall rules to Allow Azure services to access the DW",
             "type": "Microsoft.Sql/servers/firewallRules",
-            "apiVersion": "2018-06-01",
+            "apiVersion": "2015-05-01-preview",
             "name": "[concat(parameters('azureSqlServerName'), '/AllowAllWindowsAzureIps')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Sql/servers', parameters('azureSqlServerName'))]"

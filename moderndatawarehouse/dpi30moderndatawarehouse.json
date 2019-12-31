@@ -69,7 +69,7 @@
         {
             "comments": "Deploy the Data Factory, this is limited to three regions currently as Data Factory Region doesn't matter. Data Factory compute is deployed at the data sink",
             "type": "Microsoft.DataFactory/factories",
-            "apiVersion": "2018-06-01",
+            "apiVersion": "2018-06-01-preview",
             "name": "[parameters('dataFactoryName')]",
             "location": "[parameters('dataFactoryRegion')]",
             "tags": {
@@ -83,7 +83,7 @@
         {
             "comments": "Deploy the SQL Azure Logical server to hold our DW",
             "type": "Microsoft.Sql/servers",
-            "apiVersion": "2018-06-01",
+            "apiVersion": "2018-06-01-preview",
             "name": "[parameters('azureSqlServerName')]",
             "location": "[resourceGroup().location]",
             "tags": {
@@ -134,7 +134,7 @@
         {
             "comments": "Deploy Azure Synapse (Azure Data Warehouse). DW200c was chose to get full mpp work load testing.",
             "type": "Microsoft.Sql/servers/databases",
-            "apiVersion": "2018-06-01",
+            "apiVersion": "2018-06-01-preview",
             "name": "[concat(parameters('azureSqlServerName'), '/', parameters('azureSqlDataWarehouseName'))]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
