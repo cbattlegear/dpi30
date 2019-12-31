@@ -6,6 +6,100 @@ DPi30 Decision and Deployment Tree
 Script that will walk you through determining the proper DPi30 Template and help you deploy it step by step.
 #>
 
+### Validation Functions ###
+function ResourceGroupNameValidation {
+    Param(
+        # Name to verify
+        $Name
+    )
+    # Resource Group name restrictions: alphanumeric characters, periods, underscores, hyphens and parenthesis and cannot end in a period, less than 90 characters
+    if ($Name -cmatch "^[\w\-\.\(\)]{1,90}[^\.]$"){
+        return @{Result=$true; Message="Valid"}
+    } else {
+        return @{Result=$false; Message="Resource Group name restrictions: alphanumeric characters, periods, underscores, hyphens and parenthesis and cannot end in a period, less than 90 characters"}
+    }
+}
+
+function StorageAccountNameValidation {
+    Param(
+        # Name to verify
+        $Name
+    )
+    # Storage Account name restrictions: Lower case leters or numbers, 3 to 24 characters
+    if ($Name -cmatch "^[a-z0-9]{3,24}$") {
+        return @{Result=$true; Message="Valid"}
+    } else {
+        return @{Result=$false; Message="Storage Account name restrictions: Lower case leters or numbers, 3 to 24 characters"}
+    }
+}
+
+function DatabricksNameValidation {
+    Param(
+        # Name to verify
+        $Name
+    )
+    # Databricks name restrictions: Alphanumeric characters, underscores, and hyphens are allowed, and the name must be 1-30 characters long.
+    if ($Name -cmatch "^[\w-]{1,30}$") {
+        return @{Result=$true; Message="Valid"}
+    } else {
+        return @{Result=$false; Message="Databricks name restrictions: Alphanumeric characters, underscores, and hyphens are allowed, and the name must be 1-30 characters long."}
+    }
+}
+
+function DatabaseNameValidation {
+    Param(
+        # Name to verify
+        $Name
+    )
+    # Database name restrictions: Alphanumeric characters, underscores 1-128 characters long.
+    if ($Name -cmatch "^[\w]{1,128}$") {
+        return @{Result=$true; Message="Valid"}
+    } else {
+        return @{Result=$false; Message="Database name restrictions: Alphanumeric characters, underscores 1-128 characters long."}
+    }
+}
+
+function DatabaseServerNameValidation {
+    Param(
+        # Name to verify
+        $Name
+    )
+    # Database Server name restrictions: Your server name can contain only lowercase letters, numbers, and '-', but can't start or end with '-' or have more than 63 characters.
+    if ($Name -cmatch "^[^-][a-z0-9-]{1,63}(?<!-)$") {
+        return @{Result=$true; Message="Valid"}
+    } else {
+        return @{Result=$false; Message="Database Server name restrictions: Your server name can contain only lowercase letters, numbers, and '-', but can't start or end with '-' or have more than 63 characters."}
+    }
+}
+
+function DatabaseLoginNameValidation {
+    Param(
+        # Name to verify
+        $Name
+    )
+    # Database Login name restrictions: Your login name must not include non-alphanumeric characters and must not start with numbers or symbols
+    if ($Name -cmatch "^[^0-9][a-zA-Z0-9]{1,128}$") {
+        return @{Result=$true; Message="Valid"}
+    } else {
+        return @{Result=$false; Message="Database Login name restrictions: Your login name must not include non-alphanumeric characters and must not start with numbers or symbols"}
+    }
+}
+
+function DataFactoryNameValidation {
+    Param(
+        # Name to verify
+        $Name
+    )
+    # Data Factory name restrictions: contain only letters, numbers and hyphens. The first and last characters must be a letter or number.
+    if ($Name -cmatch "^[^-][a-zA-Z0-9]{1,128}$") {
+        return @{Result=$true; Message="Valid"}
+    } else {
+        return @{Result=$false; Message="Data Factory name restrictions: contain only letters, numbers and hyphens. The first and last characters must be a letter or number."}
+    }
+}
+
+### End Validation Functions ###
+
 function DetermineTemplate {
     # Questionaire to determine best fit, Current logic is if you answer yes at least twice you should use Modern Data Warehouse
     $dwscore = 0
@@ -53,6 +147,12 @@ function DeployResourceGroup {
     
     Write-Host "First, let's create a Resource Group to put all these services in."
     $ResourceGroupName = Read-Host "What would you like the Resource Group named"
+    $valid = ResourceGroupNameValidation -Name $ResourceGroupName
+    while(!($valid.Result)) {
+        Write-Host $valid.Message -ForegroundColor Red
+        $ResourceGroupName = Read-Host "What would you like the Resource Group named"
+        $valid = ResourceGroupNameValidation -Name $ResourceGroupName
+    }
     $ExistingResourceGroup = Get-AzResourceGroup -ResourceGroupName $ResourceGroupName -ErrorVariable notPresent -ErrorAction SilentlyContinue
     if($notPresent) {
         $regionfilter = ""
@@ -127,13 +227,57 @@ function DeployDWTemplate {
     )
     Clear-Host
     Write-Host "Now let's get the Modern Data Warehouse template deployed, just a few questions and we can get this kicked off."
+    
     $dbservername = Read-Host "What would you like to name the Database Server?"
+    $valid = DatabaseServerNameValidation -Name $dbservername
+    while(!($valid.Result)){
+        # Validation loop (Keep trying until you get the name right)
+        Write-Host $valid.Message -ForegroundColor Red
+        $dbservername = Read-Host "What would you like to name the Database Server?"
+        $valid = DatabaseServerNameValidation -Name $dbservername
+    }
+
     $dbadminlogin = Read-Host "What username would you like to use for the Database Server?"
+    $valid = DatabaseLoginNameValidation -Name $dbadminlogin
+    while(!($valid.Result)){
+        Write-Host $valid.Message -ForegroundColor Red
+        $dbadminlogin = Read-Host "What username would you like to use for the Database Server?"
+        $valid = DatabaseLoginNameValidation -Name $dbadminlogin
+    }
+
     $dbadminpassword = Read-Host "Password" -AsSecureString
+    
     $dwname = Read-Host "What would you like to name the Data Warehouse?"
+    $valid = DatabaseNameValidation -Name $dwname
+    while(!($valid.Result)){
+        Write-Host $valid.Message -ForegroundColor Red
+        $dwname = Read-Host "What would you like to name the Data Warehouse?"
+        $valid = DatabaseNameValidation -Name $dwname
+    }
+
     $databricksname = Read-Host "What would you like to name the Databricks Workspace?"
+    $valid = DatabricksNameValidation -Name $databricksname
+    while(!($valid.Result)){
+        Write-Host $valid.Message -ForegroundColor Red
+        $databricksname = Read-Host "What would you like to name the Databricks Workspace?"
+        $valid = DatabricksNameValidation -Name $databricksname
+    }
+
     $storagename = Read-Host "What would you like to name the Data Lake storage account?"
+    $valid = StorageAccountNameValidation -Name $storagename
+    while(!($valid.Result)){ 
+        Write-Host $valid.Message -ForegroundColor Red
+        $storagename = Read-Host "What would you like to name the Data Lake storage account?"
+        $valid = StorageAccountNameValidation -Name $storagename
+    }
+
     $dfname = Read-Host "What would you like to name the Data Factory?"
+    $valid = DataFactoryNameValidation -Name $dfname 
+    while(!($valid.Result)){ 
+        Write-Host $valid.Message -ForegroundColor Red
+        $dfname = Read-Host "What would you like to name the Data Factory?"
+        $valid = DataFactoryNameValidation -Name $dfname 
+    }
     Write-Host "Ok! That's everything, the deployment will take a few minutes, to confirm:"
     $confirmtext = @"
 
@@ -167,11 +311,48 @@ function DeploySimpleTemplate {
     Clear-Host
     Write-Host "Now let's get the Simple template deployed, just a few questions and we can get this kicked off."
     $dbservername = Read-Host "What would you like to name the Database Server?"
+    $valid = DatabaseServerNameValidation -Name $dbservername
+    while(!($valid.Result)){
+        # Validation loop (Keep trying until you get the name right)
+        Write-Host $valid.Message -ForegroundColor Red
+        $dbservername = Read-Host "What would you like to name the Database Server?"
+        $valid = DatabaseServerNameValidation -Name $dbservername
+    }
+
     $dbadminlogin = Read-Host "What username would you like to use for the Database Server?"
+    $valid = DatabaseLoginNameValidation -Name $dbadminlogin
+    while(!($valid.Result)){
+        Write-Host $valid.Message -ForegroundColor Red
+        $dbadminlogin = Read-Host "What username would you like to use for the Database Server?"
+        $valid = DatabaseLoginNameValidation -Name $dbadminlogin
+    }
+
     $dbadminpassword = Read-Host "Password" -AsSecureString
+
     $dbname = Read-Host "What would you like to name the Database?"
+    $valid = DatabaseNameValidation -Name $dbname
+    while(!($valid.Result)){
+        Write-Host $valid.Message -ForegroundColor Red
+        $dbname = Read-Host "What would you like to name the Database?"
+        $valid = DatabaseNameValidation -Name $dbname
+    }
+
     $storagename = Read-Host "What would you like to name the Blob storage account?"
+    $valid = StorageAccountNameValidation -Name $storagename
+    while(!($valid.Result)){ 
+        Write-Host $valid.Message -ForegroundColor Red
+        $storagename = Read-Host "What would you like to name the Blob storage account?"
+        $valid = StorageAccountNameValidation -Name $storagename
+    }
+
     $dfname = Read-Host "What would you like to name the Data Factory?"
+    $valid = DataFactoryNameValidation -Name $dfname 
+    while(!($valid.Result)){ 
+        Write-Host $valid.Message -ForegroundColor Red
+        $dfname = Read-Host "What would you like to name the Data Factory?"
+        $valid = DataFactoryNameValidation -Name $dfname 
+    }
+    
     Write-Host "Ok! That's everything, the deployment will take a few minutes, to confirm:"
     $confirmtext = @"
 
