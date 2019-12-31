@@ -6,6 +6,72 @@ DPi30 Decision and Deployment Tree
 Script that will walk you through determining the proper DPi30 Template and help you deploy it step by step.
 #>
 
+### Validation Functions ###
+function ResourceGroupNameValidation {
+    Param(
+        # Name to verify
+        $Name
+    )
+    # Resource Group name restrictions: alphanumeric characters, periods, underscores, hyphens and parenthesis and cannot end in a period, less than 90 characters
+    return $Name -cmatch "^[\w\-\.\(\)]{1,90}[^\.]$"
+}
+
+function StorageAccountNameValidation {
+    Param(
+        # Name to verify
+        $Name
+    )
+    # Storage Account name restrictions: Lower case leters or numbers, 3 to 24 characters
+    return $Name -cmatch "^[a-z0-9]{3,24}$"
+}
+
+function DatabricksNameValidation {
+    Param(
+        # Name to verify
+        $Name
+    )
+    # Databricks name restrictions: Alphanumeric characters, underscores, and hyphens are allowed, and the name must be 1-30 characters long.
+    return $Name -cmatch "^[\w-]{1,30}$"
+}
+
+function DatabaseNameValidation {
+    Param(
+        # Name to verify
+        $Name
+    )
+    # Database name restrictions: Alphanumeric characters, underscores 1-128 characters long.
+    return $Name -cmatch "^[\w]{1,128}$"
+}
+
+function DatabaseServerNameValidation {
+    Param(
+        # Name to verify
+        $Name
+    )
+    # Database Server name restrictions: Your server name can contain only lowercase letters, numbers, and '-', but can't start or end with '-' or have more than 63 characters.
+    return $Name -cmatch "^[^-][a-z0-9-]{1,63}(?<!-)$"
+}
+
+function DatabaseLoginNameValidation {
+    Param(
+        # Name to verify
+        $Name
+    )
+    # Database Login name restrictions: Your login name must not include non-alphanumeric characters and must not start with numbers or symbols
+    return $Name -cmatch "^[^0-9][a-zA-Z0-9]{1,128}$"
+}
+
+function DataFactoryNameValidation {
+    Param(
+        # Name to verify
+        $Name
+    )
+    # Data Factory name restrictions: contain only letters, numbers and hyphens. The first and last characters must be a letter or number.
+    return $Name -cmatch "^[^-][a-zA-Z0-9]{1,128}$"
+}
+
+### End Validation Functions ###
+
 function DetermineTemplate {
     # Questionaire to determine best fit, Current logic is if you answer yes at least twice you should use Modern Data Warehouse
     $dwscore = 0
