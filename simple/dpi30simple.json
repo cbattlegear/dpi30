@@ -41,6 +41,18 @@
             "metadata": {
                 "description": "The data facory name (will be displayed in the Azure Portal)"
             }
+        },
+        "dataFactoryRegion": {
+            "type": "String",
+            "allowedValues": [
+                "East US",
+                "Southeast Asia",
+                "North Europe"
+            ],
+            "defaultValue": "East US",
+            "metadata": {
+                "description": "Data Factory Region, this is limited to three regions currently as Data Factory Region doesn't matter. Data Factory compute is deployed at the data sink."
+            }
         }
     },
     "variables": {},
@@ -50,7 +62,7 @@
             "type": "Microsoft.DataFactory/factories",
             "apiVersion": "2018-06-01",
             "name": "[parameters('dataFactoryName')]",
-            "location": "East US",
+            "location": "[parameters('dataFactoryRegion')]",
             "tags": {
                 "dpi30": "True"
             },
@@ -62,7 +74,7 @@
         {
             "comments": "Deploy the SQL Azure Logical server to hold our Database",
             "type": "Microsoft.Sql/servers",
-            "apiVersion": "2015-05-01-preview",
+            "apiVersion": "2018-06-01",
             "name": "[parameters('azureSqlServerName')]",
             "location": "[resourceGroup().location]",
             "tags": {
@@ -93,8 +105,6 @@
                 "isHnsEnabled": false,
                 "networkAcls": {
                     "bypass": "AzureServices",
-                    "virtualNetworkRules": [],
-                    "ipRules": [],
                     "defaultAction": "Allow"
                 },
                 "supportsHttpsTrafficOnly": true,
@@ -143,7 +153,7 @@
         {
             "comments": "Firewall rules to Allow Azure services to access the DW",
             "type": "Microsoft.Sql/servers/firewallRules",
-            "apiVersion": "2015-05-01-preview",
+            "apiVersion": "2018-06-01",
             "name": "[concat(parameters('azureSqlServerName'), '/AllowAllWindowsAzureIps')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Sql/servers', parameters('azureSqlServerName'))]"
@@ -165,9 +175,6 @@
                 "name": "Standard_LRS"
             },
             "properties": {
-                "cors": {
-                    "corsRules": []
-                },
                 "deleteRetentionPolicy": {
                     "enabled": false
                 }

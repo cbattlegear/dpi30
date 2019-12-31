@@ -47,6 +47,18 @@
             "metadata": {
                 "description": "The data facory name (will be displayed in the Azure Portal)"
             }
+        },
+        "dataFactoryRegion": {
+            "type": "String",
+            "allowedValues": [
+                "East US",
+                "Southeast Asia",
+                "North Europe"
+            ],
+            "defaultValue": "East US",
+            "metadata": {
+                "description": "Data Factory Region, this is limited to three regions currently as Data Factory Region doesn't matter. Data Factory compute is deployed at the data sink."
+            }
         }
     },
     "variables": {
@@ -55,11 +67,11 @@
     },
     "resources": [
         {
-            "comments": "Deploy the Data Factory, Use East US no matter what as Data Factory location does not matter TODO: Determine best method to use this globally",
+            "comments": "Deploy the Data Factory, this is limited to three regions currently as Data Factory Region doesn't matter. Data Factory compute is deployed at the data sink",
             "type": "Microsoft.DataFactory/factories",
             "apiVersion": "2018-06-01",
             "name": "[parameters('dataFactoryName')]",
-            "location": "East US",
+            "location": "[parameters('dataFactoryRegion')]",
             "tags": {
                 "dpi30": "True"
             },
@@ -71,7 +83,7 @@
         {
             "comments": "Deploy the SQL Azure Logical server to hold our DW",
             "type": "Microsoft.Sql/servers",
-            "apiVersion": "2015-05-01-preview",
+            "apiVersion": "2018-06-01",
             "name": "[parameters('azureSqlServerName')]",
             "location": "[resourceGroup().location]",
             "tags": {
@@ -102,8 +114,6 @@
                 "isHnsEnabled": true,
                 "networkAcls": {
                     "bypass": "AzureServices",
-                    "virtualNetworkRules": [],
-                    "ipRules": [],
                     "defaultAction": "Allow"
                 },
                 "supportsHttpsTrafficOnly": true,
@@ -124,7 +134,7 @@
         {
             "comments": "Deploy Azure Synapse (Azure Data Warehouse). DW200c was chose to get full mpp work load testing.",
             "type": "Microsoft.Sql/servers/databases",
-            "apiVersion": "2017-10-01-preview",
+            "apiVersion": "2018-06-01",
             "name": "[concat(parameters('azureSqlServerName'), '/', parameters('azureSqlDataWarehouseName'))]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
@@ -171,9 +181,6 @@
                 "name": "Standard_LRS"
             },
             "properties": {
-                "cors": {
-                    "corsRules": []
-                },
                 "deleteRetentionPolicy": {
                     "enabled": false
                 }

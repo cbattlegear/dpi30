@@ -55,23 +55,64 @@ function DeployResourceGroup {
     $ResourceGroupName = Read-Host "What would you like the Resource Group named"
     $ExistingResourceGroup = Get-AzResourceGroup -ResourceGroupName $ResourceGroupName -ErrorVariable notPresent -ErrorAction SilentlyContinue
     if($notPresent) {
-        $locationlist = ((Get-AzLocation | Where-Object Providers -like "Microsoft.Databricks" | Where-Object Providers -like "Microsoft.Sql" | Where-Object DisplayName -like "* US*").DisplayName)
+        $regionfilter = ""
+        $datafactoryregion = ""
+        $geography = Read-Host "Which geography would you like deploy in? `n 1. US `n 2. Europe `n 3. Asia"
+        switch ($geography)
+        {
+            "1" {
+                $regionfilter = "US"
+                $datafactoryregion = "East US"
+                break
+            }
+            "US" {
+                $regionfilter = "US"
+                $datafactoryregion = "East US"
+                break
+            }
+            "2" {
+                $regionfilter = "Europe"
+                $datafactoryregion = "North Europe"
+                break
+            }
+            "Europe" {
+                $regionfilter = "Europe"
+                $datafactoryregion = "North Europe"
+                break
+            }
+            "3" {
+                $regionfilter = "Asia"
+                $datafactoryregion = "Southeast Asia"
+                break
+            }
+            "Asia" {
+                $regionfilter = "Asia"
+                $datafactoryregion = "Southeast Asia"
+                break
+            }
+        }
+        $locationlist = ((Get-AzLocation | Where-Object Providers -like "Microsoft.Databricks" | Where-Object Providers -like "Microsoft.Sql" | Where-Object DisplayName -like "* $regionfilter*").DisplayName)
         Write-Host "Here are the regions availble for deployment: "
         Write-Host $locationlist -Separator ", "
         Write-Host "Which region would you like the Resource Group in"
         $rglocation = Read-Host
-        New-AzResourceGroup -Name $ResourceGroupName -Location $rglocation -Tag @{dpi30="True"} | Out-Null
+        # Assign to prevent object being returned in function
+        $resourcegroupreturnhold = New-AzResourceGroup -Name $ResourceGroupName -Location $rglocation -Tag @{dpi30="True"}
         Write-Host "Your new Resource Group $ResourceGroupName has been deployed."
-        return $ResourceGroupName
+        $resourceGroupInformation = @{ResourceGroupName = $ResourceGroupName; DataFactoryRegion = $datafactoryregion}
+        return $resourceGroupInformation
     } else {
         Write-Host "That resource group already exists in $($ExistingResourceGroup.Location)"
         $confirmation = Read-Host "Would you like to use the existing Resource Group? (y/n)"
         if ($confirmation -eq 'y') {
-            return $ResourceGroupName
+            # Default to East US when we don't know (to lazy to determine) the geography            
+            $datafactoryregion = "East US"
+            $resourceGroupInformation = @{ResourceGroupName = $ResourceGroupName; DataFactoryRegion = $datafactoryregion}
+            return $resourceGroupInformation
         } else {
             Write-Host "Ok, let's start this part over"
-            $ResourceGroupName = DeployResourceGroup
-            return $ResourceGroupName
+            $resourceGroupInformation = DeployResourceGroup
+            return $resourceGroupInformation
         }
     }
 }
@@ -80,7 +121,9 @@ function DeployDWTemplate {
     # Function to gather information and deploy the Modern Data Warehouse Template
     Param(
         # The resource group name that the template will be deployed to
-        $ResourceGroupName
+        $ResourceGroupName,
+        # The data factory region determined by the Geography chosen 
+        $DataFactoryRegion
     )
     Clear-Host
     Write-Host "Now let's get the Modern Data Warehouse template deployed, just a few questions and we can get this kicked off."
@@ -103,13 +146,13 @@ function DeployDWTemplate {
     Data Factory Name:               $dfname
 
     To re-run in case of failure you can use:
-    New-AzResourceGroupDeployment -ResourceGroupName `"$ResourceGroupName`" -TemplateFile `"dpi30\moderndatawarehouse\dpi30moderndatawarehouse.json`" -azureSqlServerName `"$dbservername`" -azureSqlServerAdminLogin `"$dbadminlogin`" -azureSqlDataWarehouseName `"$dwname`" -databricksWorkspaceName `"$databricksname`" -storageAccountName `"$storagename`" -dataFactoryName `"$dfname`"
+    New-AzResourceGroupDeployment -ResourceGroupName `"$ResourceGroupName`" -TemplateFile `"dpi30\moderndatawarehouse\dpi30moderndatawarehouse.json`" -azureSqlServerName `"$dbservername`" -azureSqlServerAdminLogin `"$dbadminlogin`" -azureSqlDataWarehouseName `"$dwname`" -databricksWorkspaceName `"$databricksname`" -storageAccountName `"$storagename`" -dataFactoryName `"$dfname`" -dataFactoryRegion `"$DataFactoryRegion`"
 "@
     Write-Host $confirmtext
     $confirmation = Read-Host "Do you wish to continue? (y/n)"
     if ($confirmation -eq "y") {
         Write-Host "Deploying Template..."
-        New-AzResourceGroupDeployment -ResourceGroupName $ResourceGroupName -TemplateFile dpi30\moderndatawarehouse\dpi30moderndatawarehouse.json -azureSqlServerName $dbservername -azureSqlServerAdminLogin $dbadminlogin -azureSqlServerAdminPassword $dbadminpassword -azureSqlDataWarehouseName $dwname -databricksWorkspaceName $databricksname -storageAccountName $storagename -dataFactoryName $dfname
+        New-AzResourceGroupDeployment -ResourceGroupName $ResourceGroupName -TemplateFile dpi30\moderndatawarehouse\dpi30moderndatawarehouse.json -azureSqlServerName $dbservername -azureSqlServerAdminLogin $dbadminlogin -azureSqlServerAdminPassword $dbadminpassword -azureSqlDataWarehouseName $dwname -databricksWorkspaceName $databricksname -storageAccountName $storagename -dataFactoryName $dfname -dataFactoryRegion $DataFactoryRegion
     }
 }
 
@@ -117,7 +160,9 @@ function DeploySimpleTemplate {
     # Function to gather information and deploy the Simple Template
     Param(
         # The resource group name that the template will be deployed to
-        $ResourceGroupName
+        $ResourceGroupName,
+        # The data factory region determined by the Geography chosen 
+        $DataFactoryRegion
     )
     Clear-Host
     Write-Host "Now let's get the Simple template deployed, just a few questions and we can get this kicked off."
@@ -138,13 +183,13 @@ function DeploySimpleTemplate {
     Data Factory Name:               $dfname
 
     To re-run in case of failure you can use:
-    New-AzResourceGroupDeployment -ResourceGroupName `"$ResourceGroupName`" -TemplateFile `"dpi30\simple\dpi30simple.json`" -azureSqlServerName `"$dbservername`" -azureSqlServerAdminLogin `"$dbadminlogin`" -azureSqlDatabaseName `"$dbname`" -storageAccountName `"$storagename`" -dataFactoryName `"$dfname`"
+    New-AzResourceGroupDeployment -ResourceGroupName `"$ResourceGroupName`" -TemplateFile `"dpi30\simple\dpi30simple.json`" -azureSqlServerName `"$dbservername`" -azureSqlServerAdminLogin `"$dbadminlogin`" -azureSqlDatabaseName `"$dbname`" -storageAccountName `"$storagename`" -dataFactoryName `"$dfname` -dataFactoryRegion `"$DataFactoryRegion`"
 "@
     Write-Host $confirmtext
     $confirmation = Read-Host "Do you wish to continue? (y/n)"
     if ($confirmation -eq "y") {
         Write-Host "Deploying Template..."
-        New-AzResourceGroupDeployment -ResourceGroupName $ResourceGroupName -TemplateFile dpi30\simple\dpi30simple.json -azureSqlServerName $dbservername -azureSqlServerAdminLogin $dbadminlogin -azureSqlServerAdminPassword $dbadminpassword -azureSqlDataWarehouseName $dbname -storageAccountName $storagename -dataFactoryName $dfname
+        New-AzResourceGroupDeployment -ResourceGroupName $ResourceGroupName -TemplateFile dpi30\simple\dpi30simple.json -azureSqlServerName $dbservername -azureSqlServerAdminLogin $dbadminlogin -azureSqlServerAdminPassword $dbadminpassword -azureSqlDataWarehouseName $dbname -storageAccountName $storagename -dataFactoryName $dfname -dataFactoryRegion $DataFactoryRegion
     }
 }
 
@@ -154,12 +199,12 @@ function DeployTemplate {
         # The Template name we intend to deploy
         $template
     )
-    $ResourceGroupName = DeployResourceGroup
+    $resourceGroupInformation = DeployResourceGroup
     if ($template -eq "datawarehouse") {
-        DeployDWTemplate -ResourceGroupName $ResourceGroupName
+        DeployDWTemplate -ResourceGroupName $resourceGroupInformation.ResourceGroupName -DataFactoryRegion $resourceGroupInformation.DataFactoryRegion
     }
     if ($template -eq "simple") {
-        DeploySimpleTemplate
+        DeploySimpleTemplate -ResourceGroupName $resourceGroupInformation.ResourceGroupName -DataFactoryRegion $resourceGroupInformation.DataFactoryRegion
     }
 }
 
@@ -175,7 +220,7 @@ It will deploy the following to your selected Azure Subscription:
 $simpledescription = @"
 Based on your answers we suggest the Simple template.
 It will deploy the following to your selected Azure Subscription:
-    * SQL Azure Database (Gen 5 2 Cores)
+    * SQL Azure Hyperscale Database (Gen 5 2 Cores, 1 readable secondary)
     * Azure Storage Account (Blob Storage)
     * Azure Data Factory
 "@
