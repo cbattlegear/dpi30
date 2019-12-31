@@ -123,7 +123,7 @@
             }
         },
         {
-            "comments": "Deploy a 2 core Gen 5 database to hold our BI data",
+            "comments": "Deploy a 2 core Gen 5 Hyperscale database to hold our BI data",
             "type": "Microsoft.Sql/servers/databases",
             "apiVersion": "2019-06-01-preview",
             "name": "[concat(parameters('azureSqlServerName'), '/', parameters('azureSqlDatabaseName'))]",
@@ -135,8 +135,8 @@
                 "dpi30": "True"
             },
             "sku": {
-                "name": "GP_Gen5",
-                "tier": "GeneralPurpose",
+                "name": "HS_Gen5",
+                "tier": "Hyperscale",
                 "family": "Gen5",
                 "capacity": 2
             },
