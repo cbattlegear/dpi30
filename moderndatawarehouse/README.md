@@ -22,3 +22,20 @@ After deploying the template you will want to start getting data into your data 
 * [Data loading strategies for Azure SQL Data Warehouse](https://docs.microsoft.com/en-us/azure/sql-data-warehouse/design-elt-data-loading)
 * [Create an Azure Databricks Spark cluster](https://docs.microsoft.com/en-us/azure/storage/blobs/data-lake-storage-quickstart-create-databricks-account#create-a-spark-cluster-in-databricks)
 * [Run a Databricks notebook with the Databricks Notebook Activity in Azure Data Factory](https://docs.microsoft.com/en-us/azure/data-factory/transform-data-using-databricks-notebook)
+
+## Rationale
+
+### Why are you deploying Databricks?
+The goal of deploying Databricks in this template is to allow for real time data processing via Kafka or Event Hubs. Also it is the best method to allow for high performance access and modification of data in Data Lake Gen 2.
+
+### Why are you deploying Data Lake Gen 2?
+Data Lake Gen 2 has a high performance HDFS driver that allows for fast access from both Databricks and Data Warehouse via Polybase. 
+
+### Why are you deploying Azure Synapse Analytics (formerly Azure Data Warehouse)? 
+High speed processing of structured data. It's the best landing point to handle analytics at scale once you have structured your data.
+
+### Why are you deploying DW200c instead of DW100?
+We are deploying 200c to a) Get multiple nodes for data warehouse processing (each 100 DWU equals 1 compute node) and b) use Gen 2 Data Warehouse which comes with several performance and caching improvements.
+
+### Why did you deploy Data Factory?
+Data Factory is the best option to orchestrate all this data movement and has the best options for moving data from one place to another quickly and easily.

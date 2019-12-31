@@ -18,3 +18,14 @@ After deploying the simple template you will want to start getting data into you
 * [Copy data from an on-premises SQL Server database to Azure Blob storage](https://docs.microsoft.com/en-us/azure/data-factory/tutorial-hybrid-copy-portal)
 * [Copy data from Azure Blob storage to a SQL database by using Azure Data Factory](https://docs.microsoft.com/en-us/azure/data-factory/tutorial-copy-data-portal)
 * [Columnstore Indexes](https://docs.microsoft.com/en-us/sql/relational-databases/indexes/columnstore-indexes-overview?view=sql-server-ver15)
+
+## Rationale
+
+### Why are you deploying Azure SQL Hyperscale?
+Hyperscale is the best option for a simple data warehouse. It allows for read scale out for Business Intelligence queries and to expand to 100 TB comfortably.
+
+### Why deploy a blob storage account instead of data lake?
+SQL Azure currently cannot access Data Lake Gen 2 directly. To allow for bulk insert of data we are using Blob storage for direct access from SQL Azure.
+
+### Why did you deploy Data Factory?
+Data Factory is the best option to orchestrate all this data movement and has the best options for moving data from one place to another quickly and easily.
