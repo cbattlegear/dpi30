@@ -408,29 +408,46 @@ It will deploy the following to your selected Azure Subscription:
 
 # Our code entry point, We verify the subscription and move through the steps from here.
 Clear-Host
+$currentsub = Get-AzContext
+$currentsubfull = $currentsub.Subscription.Name + " (" + $currentsub.Subscription.Id + ")"
 Write-Host "Welcome to the DPi30 Deployment Wizard!"
-Write-Host "Before we get started, is this the correct Azure Subscription:" 
-Write-Host (Get-AzContext).Subscription.Name -ForegroundColor Yellow
-$confirmation = Read-Host "(y/n)"
-if ($confirmation -eq "y") {
-    if (DetermineTemplate) {
-        Write-Host $datawarehousedescription
-        $confirmation = Read-Host "Would you like to continue? (y/n)"
-        if ($confirmation -eq "y") {
-            DeployTemplate -template "datawarehouse"
-        } else {
-            exit
-        }
+Write-Host "Before we get started, we need to select the subscription for this deployment:"
+Write-Host  "Current Subscription: $($currentsubfull)`r`n" -ForegroundColor Yellow
+$rawsubscriptionlist = Get-AzSubscription | where {$_.State -ne "Disabled"} | Select Name, Id 
+$subscriptionlist = [ordered]@{}
+$subscriptionlist.Add(0, "Use current Subscription above")
+$subcount = 1
+foreach ($subscription in $rawsubscriptionlist) {
+    $subname = $subscription.Name + " (" + $subscription.Id + ")"
+    if($subname -ne $currentsubfull) {
+        $subscriptionlist.Add($subcount, $subname)
+        $subcount++
+    }
+}
+$subscriptionlist.GetEnumerator() | ForEach-Object { Write-Host "$($_.Key))" "$($_.Value)"}
+
+$subselection = Read-Host "`r`nSubscription number"
+if ($subselection -ne 0) {
+    $selectedsub = $subscriptionlist.[int]$subselection
+    $selectedsubid = $selectedsub.Substring($selectedsub.Length - 37).TrimEnd(")")
+    $changesub = Select-AzSubscription -Subscription $selectedsubid
+    Write-Host "`r`nChanged to Subscription $($changesub.Name)"
+} 
+
+if (DetermineTemplate) {
+    Write-Host $datawarehousedescription
+    $confirmation = Read-Host "`r`nWould you like to continue? (y/n)"
+    if ($confirmation -eq "y") {
+        DeployTemplate -template "datawarehouse"
     } else {
-        Write-Host $simpledescription
-        $confirmation = Read-Host "Would you like to continue? (y/n)"
-        if ($confirmation -eq "y") {
-            DeployTemplate -template "simple"
-        } else {
-            exit
-        }
+        exit
     }
 } else {
-    Write-Host "Please select the proper subscription with Select-AzSubscription and try again." -ForegroundColor Red
-    exit
-}
+    Write-Host $simpledescription
+    $confirmation = Read-Host "`r`nWould you like to continue? (y/n)"
+    if ($confirmation -eq "y") {
+        DeployTemplate -template "simple"
+    } else {
+        exit
+    }
+ }
