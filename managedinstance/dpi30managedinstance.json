@@ -150,9 +150,7 @@
         {
             "name": "[parameters('managedInstanceName')]",
             "location": "[resourceGroup().location]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('managedInstanceSubnetName'))]"
-            ],
+            
             "tags": {
                 "Description": "General Purpose Managed Instance"
             },
