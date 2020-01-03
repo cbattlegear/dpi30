@@ -151,7 +151,7 @@
             "name": "[parameters('managedInstanceName')]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('managedInstanceSubnetName'))]"
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('managedInstanceSubnetName'))]"
             ],
             "tags": {
                 "Description": "General Purpose Managed Instance"
@@ -163,7 +163,7 @@
             "properties": {
                 "administratorLogin": "[parameters('managedInstanceAdminLogin')]",
                 "administratorLoginPassword": "[parameters('managedInstanceAdminPassword')]",
-                "subnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('managedInstanceSubnetName'))]",
+                "subnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('managedInstanceSubnetName'))]",
                 "storageSizeInGB": 256,
                 "vCores": 4,
                 "licenseType": "LicenseIncluded",
@@ -243,7 +243,7 @@
                                 "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIPAddressName'))]"
                             },
                             "subnet": {
-                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('defaultSubnetName'))]"
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('defaultSubnetName'))]"
                             }
                         }
                     }
