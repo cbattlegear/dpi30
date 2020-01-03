@@ -169,9 +169,20 @@ function DeployResourceGroup {
             "Asia" = "Southeast Asia"
         }
         #Prompting for geography selection, result will select default Data Factory region and list regions for that geography
+ 
         Write-Host "`r`nWhich geography would you like to deploy in?`r`n"
         $geographylist.GetEnumerator() | ForEach-Object { Write-Host "$($_.Key))" "$($_.Value)"}
-        $geographyselection = Read-Host "`r`nGeography Number"
+        
+        #Validating numeric input for rg geography  
+        do{
+            $geographyselection = Read-Host "`r`nGeography Number"
+            $intref = 0
+            if(  ![int32]::TryParse( $geographyselection , [ref]$intref ))
+            {
+                Write-Host "Enter a valid number for one of the above Geographies" -ForegroundColor Red
+            }
+        } until ($intref -gt 0 -or $geographyselection -eq '0')
+        
         $datafactoryregion = $datafactoryregions[$geographylist.[int]$geographyselection]
         #Write-Host "Selected $($geographyselection) which is $($geographylist.[int]$geographyselection) and our Data Factory region is $($datafactoryregion)"
         
@@ -185,7 +196,17 @@ function DeployResourceGroup {
             $locationlist.Add($i + 1, $rawlocationlist[$i].DisplayName)
         }
         $locationlist.GetEnumerator() | ForEach-Object { Write-Host "$($_.Key))" "$($_.Value)"}
-        $rglocation = Read-Host "`r`nRegion Number"
+
+        #Validating numeric input for rg region  
+        do{
+            $rglocation = Read-Host "`r`nRegion Number"
+            $intref = 0
+            if(  ![int32]::TryParse( $rglocation , [ref]$intref ))
+            {
+                Write-Host "`Enter a valid number for one of the above Regions" -ForegroundColor Red
+            }
+        } until ($intref -gt 0 -or $rglocation -eq '0')
+        
         $rglocation = $locationlist.[int]$rglocation
         #Got our Region for resource group deployment
         # Assign to prevent object being returned in function
@@ -202,7 +223,7 @@ function DeployResourceGroup {
             $resourceGroupInformation = @{ResourceGroupName = $ResourceGroupName; DataFactoryRegion = $datafactoryregion}
             return $resourceGroupInformation
         } else {
-            Write-Host "Ok, let's start this part over"
+            Write-Host "`r`nOk, let's start this part over" -ForegroundColor Yellow
             $resourceGroupInformation = DeployResourceGroup
             return $resourceGroupInformation
         }
@@ -418,7 +439,16 @@ foreach ($subscription in $rawsubscriptionlist) {
 }
 $subscriptionlist.GetEnumerator() | ForEach-Object { Write-Host "$($_.Key))" "$($_.Value)"}
 
-$subselection = Read-Host "`r`nSubscription number"
+#Validating numeric input for subscription
+do{
+  $subselection = Read-Host "`r`nSubscription number"
+  $intref = 0
+  if(  ![int32]::TryParse( $subselection , [ref]$intref ))
+  {
+    Write-Host "Enter a valid number for one of the above Subscriptions" -ForegroundColor Red
+  }
+} until ($intref -gt 0 -or $subselection -eq '0')
+
 if ($subselection -ne 0) {
     $selectedsub = $subscriptionlist.[int]$subselection
     $selectedsubid = $selectedsub.Substring($selectedsub.Length - 37).TrimEnd(")")
