@@ -70,7 +70,7 @@
         },
         "virtualNetworkName": {
             "type": "string",
-            "defaultValue": "MyNewVNet",
+            "defaultValue": "dpi30vNet",
             "metadata": {
                 "description": "The name of new Azure VNet where you can deploy Azure Sql Managed Instances and the resources that use them"
             }
@@ -150,7 +150,9 @@
         {
             "name": "[parameters('managedInstanceName')]",
             "location": "[resourceGroup().location]",
-            
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks/', parameters('virtualNetworkName'))]"
+            ],
             "tags": {
                 "Description": "General Purpose Managed Instance"
             },

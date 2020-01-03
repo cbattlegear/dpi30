@@ -147,7 +147,6 @@ function DeployResourceGroup {
     $ExistingResourceGroup = Get-AzResourceGroup -ResourceGroupName $ResourceGroupName -ErrorVariable notPresent -ErrorAction SilentlyContinue
     if($notPresent) {
         #Creating lists of geography and default data factory regions for those geographies
-        $regionfilter = ""
         $datafactoryregion = ""
         $geographylist = [ordered]@{
             [int]"1" = "US"
@@ -178,7 +177,7 @@ function DeployResourceGroup {
         #Write-Host "Selected $($geographyselection) which is $($geographylist.[int]$geographyselection) and our Data Factory region is $($datafactoryregion)"
         
         #Prompting for region selection.
-        $rawlocationlist = ((Get-AzLocation | Where-Object Providers -like "Microsoft.Databricks" | Where-Object Providers -like "Microsoft.Sql" | Where-Object DisplayName -like "* $($geographylist.[int]$geographyselection)*")) | Sort-Object -property DisplayName | Select DisplayName
+        $rawlocationlist = ((Get-AzLocation | Where-Object Providers -like "Microsoft.Databricks" | Where-Object Providers -like "Microsoft.Sql" | Where-Object DisplayName -like "* $($geographylist.[int]$geographyselection)*")) | Sort-Object -property DisplayName | Select-Object DisplayName
         Write-Host "`r`nHere are the regions available for deployment:`r`n"
         $locationlist = [ordered] @{}
 
@@ -418,7 +417,7 @@ $currentsubfull = $currentsub.Subscription.Name + " (" + $currentsub.Subscriptio
 Write-Host "Welcome to the DPi30 Deployment Wizard!"
 Write-Host "Before we get started, we need to select the subscription for this deployment:`r`n"
 #Write-Host  "Current Subscription: $($currentsubfull)`r`n" -ForegroundColor Yellow
-$rawsubscriptionlist = Get-AzSubscription | where {$_.State -ne "Disabled"} | Sort-Object -property Name | Select Name, Id 
+$rawsubscriptionlist = Get-AzSubscription | Where-Object {$_.State -ne "Disabled"} | Sort-Object -property Name | Select-Object Name, Id 
 $subscriptionlist = [ordered]@{}
 $subscriptionlist.Add(0, "CURRENT SUBSCRIPTION: $($currentsubfull)")
 $subcount = 1

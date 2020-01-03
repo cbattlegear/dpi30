@@ -1,7 +1,7 @@
 # Script to install Self hosted Integration Runtime and SSMS on the VM
 # Based on script from: https://gist.github.com/justinsoliz/34324700ea93c7b77b4ac3e132584de7
 # Set file and folder path for SSMS installer .exe
-$folderpath = "D:\Installs"
+$folderpath = "C:\Windows\Temp"
 
 # SSMS Install
 $filepath = "$folderpath\SSMS-Setup-ENU.exe"
@@ -22,7 +22,7 @@ else {
  
 # start the SSMS installer
 write-host "Beginning SSMS install..." -nonewline
-$Parms = " /Install /Quiet /Norestart /Logs log.txt"
+$Parms = " /Install /Quiet /Norestart /Logs ssmslog.txt"
 $Prms = $Parms.Split(" ")
 & "$filepath" $Prms | Out-Null
 Write-Host "SSMS installation complete" -ForegroundColor Green
@@ -44,7 +44,6 @@ else {
  
 # start the SSMS installer
 write-host "Beginning Integration Runtime install..." -nonewline
-$Parms = " /Install /Quiet /Norestart /Logs log.txt"
-$Prms = $Parms.Split(" ")
-& "$filepath" $Prms | Out-Null
+$Parms = "/i $filepath /qn /norestart /l*v shirlog.txt"
+Start-Process msiexec.exe -Wait -ArgumentList $Parms | Out-Null
 Write-Host "Integration Runtime installation complete" -ForegroundColor Green
