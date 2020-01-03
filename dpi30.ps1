@@ -176,13 +176,13 @@ function DeployResourceGroup {
         #Write-Host "Selected $($geographyselection) which is $($geographylist.[int]$geographyselection) and our Data Factory region is $($datafactoryregion)"
         
         #Prompting for region selection.
-        $rawlocationlist= ((Get-AzLocation | Where-Object Providers -like "Microsoft.Databricks" | Where-Object Providers -like "Microsoft.Sql" | Where-Object DisplayName -like "*$($geographylist.[int]$geographyselection)*").DisplayName)
+        $rawlocationlist = ((Get-AzLocation | Where-Object Providers -like "Microsoft.Databricks" | Where-Object Providers -like "Microsoft.Sql" | Where-Object DisplayName -like "* $($geographylist.[int]$geographyselection)*")) | Sort-Object -property DisplayName | Select DisplayName
         Write-Host "`r`nHere are the regions available for deployment:`r`n"
         $locationlist = [ordered] @{}
 
-        for($i=0;$i -le $locationlist.Length;$i++)
+        for($i=0;$i -lt $rawlocationlist.Length;$i++)
         {
-            $locationlist.Add($i + 1, $rawlocationlist[$i])
+            $locationlist.Add($i + 1, $rawlocationlist[$i].DisplayName)
         }
         $locationlist.GetEnumerator() | ForEach-Object { Write-Host "$($_.Key))" "$($_.Value)"}
         $rglocation = Read-Host "`r`nRegion Number"
@@ -405,7 +405,7 @@ $currentsubfull = $currentsub.Subscription.Name + " (" + $currentsub.Subscriptio
 Write-Host "Welcome to the DPi30 Deployment Wizard!"
 Write-Host "Before we get started, we need to select the subscription for this deployment:`r`n"
 #Write-Host  "Current Subscription: $($currentsubfull)`r`n" -ForegroundColor Yellow
-$rawsubscriptionlist = Get-AzSubscription | where {$_.State -ne "Disabled"} | Select Name, Id 
+$rawsubscriptionlist = Get-AzSubscription | where {$_.State -ne "Disabled"} | Sort-Object -property Name | Select Name, Id 
 $subscriptionlist = [ordered]@{}
 $subscriptionlist.Add(0, "CURRENT SUBSCRIPTION: $($currentsubfull)")
 $subcount = 1
