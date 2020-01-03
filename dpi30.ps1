@@ -104,29 +104,29 @@ function DetermineTemplate {
     # Questionaire to determine best fit, Current logic is if you answer yes at least twice you should use Modern Data Warehouse
     $dwscore = 0
     Clear-Host
-    Write-Host "Let's determine the best deployment for your situation, Please answer the next few questions with y (yes) or n (no)."
+    Write-Host "`r`nLet's determine the best deployment for your situation, Please answer the next few questions with y (yes) or n (no)."
 
-    $confirmation = Read-Host "Will you have more than 1 TB of data? (y/n)"
+    $confirmation = Read-Host "`r`nWill you have more than 1 TB of data? (y/n)"
     if ($confirmation -eq "y") {
         $dwscore++
     }
 
-    $confirmation = Read-Host "Do you have a highly analytics-based workload? (y/n)"
+    $confirmation = Read-Host "`r`nDo you have a highly analytics-based workload? (y/n)"
     if ($confirmation -eq "y") {
         $dwscore++
     }
 
-    $confirmation = Read-Host "Do you want to utilize any real-time or streaming data? (y/n)"
+    $confirmation = Read-Host "`r`nDo you want to utilize any real-time or streaming data? (y/n)"
     if ($confirmation -eq "y") {
         $dwscore++
     }
 
-    $confirmation = Read-Host "Would you like to integrate machine learning into your business intelligence? (y/n)"
+    $confirmation = Read-Host "`r`nWould you like to integrate machine learning into your business intelligence? (y/n)"
     if ($confirmation -eq "y") {
         $dwscore++
     }
 
-    $confirmation = Read-Host "Do you have Python, Scala, R, or Spark experience? (y/n)"
+    $confirmation = Read-Host "`r`nDo you have Python, Scala, R, or Spark experience? (y/n)"
     if ($confirmation -eq "y") {
         $dwscore++
     }
@@ -145,60 +145,52 @@ function DeployResourceGroup {
     # Gathers all US based regions that can deploy SQL and Databricks
     # TODO: Determine best way to allow this to be international
     
-    Write-Host "First, let's create a Resource Group to put all these services in."
+    Write-Host "`r`nFirst, let's create a Resource Group to put all these services in."
     $ResourceGroupName = Read-Host "What would you like the Resource Group named"
     $valid = ResourceGroupNameValidation -Name $ResourceGroupName
     while(!($valid.Result)) {
         Write-Host $valid.Message -ForegroundColor Red
-        $ResourceGroupName = Read-Host "What would you like the Resource Group named"
+        $ResourceGroupName = Read-Host "`r`nWhat would you like the Resource Group named"
         $valid = ResourceGroupNameValidation -Name $ResourceGroupName
     }
     $ExistingResourceGroup = Get-AzResourceGroup -ResourceGroupName $ResourceGroupName -ErrorVariable notPresent -ErrorAction SilentlyContinue
     if($notPresent) {
+        #Creating lists of geography and default data factory regions for those geographies
         $regionfilter = ""
         $datafactoryregion = ""
-        $geography = Read-Host "Which geography would you like deploy in? `n 1. US `n 2. Europe `n 3. Asia"
-        switch ($geography)
-        {
-            "1" {
-                $regionfilter = "US"
-                $datafactoryregion = "East US"
-                break
-            }
-            "US" {
-                $regionfilter = "US"
-                $datafactoryregion = "East US"
-                break
-            }
-            "2" {
-                $regionfilter = "Europe"
-                $datafactoryregion = "North Europe"
-                break
-            }
-            "Europe" {
-                $regionfilter = "Europe"
-                $datafactoryregion = "North Europe"
-                break
-            }
-            "3" {
-                $regionfilter = "Asia"
-                $datafactoryregion = "Southeast Asia"
-                break
-            }
-            "Asia" {
-                $regionfilter = "Asia"
-                $datafactoryregion = "Southeast Asia"
-                break
-            }
+        $geographylist = [ordered]@{
+            [int]"1" = "US"
+            [int]"2" = "Europe"
+            [int]"3" = "Asia"
         }
-        $locationlist = ((Get-AzLocation | Where-Object Providers -like "Microsoft.Databricks" | Where-Object Providers -like "Microsoft.Sql" | Where-Object DisplayName -like "* $regionfilter*").DisplayName)
-        Write-Host "Here are the regions availble for deployment: "
-        Write-Host $locationlist -Separator ", "
-        Write-Host "Which region would you like the Resource Group in"
-        $rglocation = Read-Host
+        $datafactoryregions = @{
+            "US" = "East US"
+            "Europe" = "NorthEurope"
+            "Asia" = "Southeast Asia"
+        }
+        #Prompting for geography selection, result will select default Data Factory region and list regions for that geography
+        Write-Host "`r`nWhich geography would you like to deploy in?`r`n"
+        $geographylist.GetEnumerator() | ForEach-Object { Write-Host "$($_.Key))" "$($_.Value)"}
+        $geographyselection = Read-Host "`r`nGeography Number"
+        $datafactoryregion = $datafactoryregions[$geographylist.[int]$geographyselection]
+        #Write-Host "Selected $($geographyselection) which is $($geographylist.[int]$geographyselection) and our Data Factory region is $($datafactoryregion)"
+        
+        #Prompting for region selection.
+        $rawlocationlist= ((Get-AzLocation | Where-Object Providers -like "Microsoft.Databricks" | Where-Object Providers -like "Microsoft.Sql" | Where-Object DisplayName -like "*$($geographylist.[int]$geographyselection)*").DisplayName)
+        Write-Host "`r`nHere are the regions available for deployment:`r`n"
+        $locationlist = [ordered] @{}
+
+        for($i=0;$i -le $locationlist.Length;$i++)
+        {
+            $locationlist.Add($i + 1, $rawlocationlist[$i])
+        }
+        $locationlist.GetEnumerator() | ForEach-Object { Write-Host "$($_.Key))" "$($_.Value)"}
+        $rglocation = Read-Host "`r`nRegion Number"
+        $rglocation = $locationlist.[int]$rglocation
+        #Got our Region for resource group deployment
         # Assign to prevent object being returned in function
         $resourcegroupreturnhold = New-AzResourceGroup -Name $ResourceGroupName -Location $rglocation -Tag @{dpi30="True"}
-        Write-Host "Your new Resource Group $ResourceGroupName has been deployed."
+        Write-Host "`r`nYour new Resource Group '$($ResourceGroupName)' has been deployed to $($rglocation)" -ForegroundColor Green
         $resourceGroupInformation = @{ResourceGroupName = $ResourceGroupName; DataFactoryRegion = $datafactoryregion}
         return $resourceGroupInformation
     } else {
@@ -225,8 +217,8 @@ function DeployDWTemplate {
         # The data factory region determined by the Geography chosen 
         $DataFactoryRegion
     )
-    Clear-Host
-    Write-Host "Now let's get the Modern Data Warehouse template deployed, just a few questions and we can get this kicked off."
+   
+    Write-Host "`r`nNow let's get the Modern Data Warehouse template deployed, just a few questions and we can get this kicked off."
     
     $dbservername = Read-Host "What would you like to name the Database Server?"
     $valid = DatabaseServerNameValidation -Name $dbservername
@@ -308,8 +300,8 @@ function DeploySimpleTemplate {
         # The data factory region determined by the Geography chosen 
         $DataFactoryRegion
     )
-    Clear-Host
-    Write-Host "Now let's get the Simple template deployed, just a few questions and we can get this kicked off."
+    
+    Write-Host "`r`nNow let's get the Simple template deployed, just a few questions and we can get this kicked off."
     $dbservername = Read-Host "What would you like to name the Database Server?"
     $valid = DatabaseServerNameValidation -Name $dbservername
     while(!($valid.Result)){
@@ -390,7 +382,7 @@ function DeployTemplate {
 }
 
 $datawarehousedescription = @"
-Based on your answers we suggest the Modern Data Warehouse template.
+`r`nBased on your answers we suggest the Modern Data Warehouse template.
 It will deploy the following to your selected Azure Subscription:
     * Azure Data Factory
     * Azure Data Lake Gen 2
@@ -399,7 +391,7 @@ It will deploy the following to your selected Azure Subscription:
 "@
 
 $simpledescription = @"
-Based on your answers we suggest the Simple template.
+`r`nBased on your answers we suggest the Simple template.
 It will deploy the following to your selected Azure Subscription:
     * SQL Azure Hyperscale Database (Gen 5 2 Cores, 1 readable secondary)
     * Azure Storage Account (Blob Storage)
@@ -411,11 +403,11 @@ Clear-Host
 $currentsub = Get-AzContext
 $currentsubfull = $currentsub.Subscription.Name + " (" + $currentsub.Subscription.Id + ")"
 Write-Host "Welcome to the DPi30 Deployment Wizard!"
-Write-Host "Before we get started, we need to select the subscription for this deployment:"
-Write-Host  "Current Subscription: $($currentsubfull)`r`n" -ForegroundColor Yellow
+Write-Host "Before we get started, we need to select the subscription for this deployment:`r`n"
+#Write-Host  "Current Subscription: $($currentsubfull)`r`n" -ForegroundColor Yellow
 $rawsubscriptionlist = Get-AzSubscription | where {$_.State -ne "Disabled"} | Select Name, Id 
 $subscriptionlist = [ordered]@{}
-$subscriptionlist.Add(0, "Use current Subscription above")
+$subscriptionlist.Add(0, "CURRENT SUBSCRIPTION: $($currentsubfull)")
 $subcount = 1
 foreach ($subscription in $rawsubscriptionlist) {
     $subname = $subscription.Name + " (" + $subscription.Id + ")"
@@ -431,7 +423,7 @@ if ($subselection -ne 0) {
     $selectedsub = $subscriptionlist.[int]$subselection
     $selectedsubid = $selectedsub.Substring($selectedsub.Length - 37).TrimEnd(")")
     $changesub = Select-AzSubscription -Subscription $selectedsubid
-    Write-Host "`r`nChanged to Subscription $($changesub.Name)"
+    Write-Host "`r`nChanged to Subscription $($changesub.Name)" -ForegroundColor Green
 } 
 
 if (DetermineTemplate) {
