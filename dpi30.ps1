@@ -103,7 +103,6 @@ function DataFactoryNameValidation {
 function DetermineTemplate {
     # Questionaire to determine best fit, Current logic is if you answer yes at least twice you should use Modern Data Warehouse
     $dwscore = 0
-    Clear-Host
     Write-Host "`r`nLet's determine the best deployment for your situation, Please answer the next few questions with y (yes) or n (no)."
 
     $confirmation = Read-Host "`r`nWill you have more than 1 TB of data? (y/n)"
@@ -131,19 +130,11 @@ function DetermineTemplate {
         $dwscore++
     }
 
-    if ($dwscore -ge 2) {
-        return $true
-    } else {
-        return $false
-    }
+    return $dwscore -ge 2
 }
 
 function DeployResourceGroup {
     # Function to gather information and deploy the resource group
-    # TODO: Determine best way to have input while it is gathering Region Data
-    Clear-Host
-    # Gathers all US based regions that can deploy SQL and Databricks
-    # TODO: Determine best way to allow this to be international
     
     Write-Host "`r`nFirst, let's create a Resource Group to put all these services in."
     $ResourceGroupName = Read-Host "What would you like the Resource Group named"
@@ -393,6 +384,7 @@ function DeployTemplate {
         # The Template name we intend to deploy
         $template
     )
+    Clear-Host
     $resourceGroupInformation = DeployResourceGroup
     if ($template -eq "datawarehouse") {
         DeployDWTemplate -ResourceGroupName $resourceGroupInformation.ResourceGroupName -DataFactoryRegion $resourceGroupInformation.DataFactoryRegion
@@ -456,6 +448,7 @@ if ($subselection -ne 0) {
     Write-Host "`r`nChanged to Subscription $($changesub.Name)" -ForegroundColor Green
 } 
 
+Clear-Host
 if (DetermineTemplate) {
     Write-Host $datawarehousedescription
     $confirmation = Read-Host "`r`nWould you like to continue? (y/n)"
