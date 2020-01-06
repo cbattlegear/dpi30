@@ -73,7 +73,7 @@ function DeploySimpleTemplate {
     Resource Group Name:             $ResourceGroupName
     Database Server Name:            $dbservername
     Database Server Login:           $dbadminlogin
-    Database Name:                   $dwname
+    Database Name:                   $dbname
     Blob Storage Account Name:       $storagename
     Data Factory Name:               $dfname
 
@@ -84,6 +84,6 @@ function DeploySimpleTemplate {
     $confirmation = Read-Host "Do you wish to continue? (y/n)"
     if ($confirmation -eq "y") {
         Write-Host "Deploying Template..."
-        New-AzResourceGroupDeployment -ResourceGroupName $ResourceGroupName -TemplateFile "$PSScriptRoot/simple/dpi30simple.json" -azureSqlServerName $dbservername -azureSqlServerAdminLogin $dbadminlogin -azureSqlServerAdminPassword $dbadminpassword -azureSqlDataWarehouseName $dbname -storageAccountName $storagename -dataFactoryName $dfname -dataFactoryRegion $DataFactoryRegion
+        New-AzResourceGroupDeployment -ResourceGroupName $ResourceGroupName -TemplateFile "$PSScriptRoot/simple/dpi30simple.json" -azureSqlServerName $dbservername -azureSqlServerAdminLogin $dbadminlogin -azureSqlServerAdminPassword $dbadminpassword -azureSqlDatabaseName $dbname -storageAccountName $storagename -dataFactoryName $dfname -dataFactoryRegion $DataFactoryRegion
     }
 }

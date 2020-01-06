@@ -109,27 +109,15 @@
             "metadata": {
                 "description": "IP Address range in the subnet dedicated to Azure SQL Managed Instances"
             }
-        },
-        "routeTableToAzureService": {
-            "type": "string",
-            "defaultValue": "RouteToAzureSqlMiMngSvc",
-            "metadata": {
-                "description": "The name of the existing or new route table that enables access to Azure SQL Managed Instance Management Service that controls the instance, manages backups and other maintenance operations"
-            }
-        },
-        "nsgForManagedInstanceSubnet": {
-            "type": "string",
-            "defaultValue": "nsg-ManagedInstances",
-            "metadata": {
-                "description": "Name of network security group dedicated to managed instance subnet"
-            }
         }
     },
     "variables": {
         "storageAccountName": "[concat(uniquestring(resourceGroup().id), 'sawinvm')]",
-        "nicName": "jumpboxNic",
-        "publicIPAddressName": "jumpboxPublicIP",
-        "networkSecurityGroupName": "default-NSG"
+        "nicName": "[concat(parameters('jumpboxDnsLabelPrefix'), '-jumpboxNic')]",
+        "publicIPAddressName": "[concat(parameters('jumpboxDnsLabelPrefix'), '-jumpboxPublicIP')]",
+        "networkSecurityGroupName": "[concat(parameters('jumpboxDnsLabelPrefix'), '-default-NSG')]",
+        "routeTableToAzureService": "[concat(parameters('managedInstanceName'), '-mi-RouteTable')]",
+        "nsgForManagedInstanceSubnet": "[concat(parameters('managedInstanceName'), '-mi-NSG')]"
     },
     "resources": [
         {
@@ -373,7 +361,7 @@
             "name": "[parameters('virtualNetworkName')]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/routeTables', parameters('routeTableToAzureService'))]"
+                "[resourceId('Microsoft.Network/routeTables', variables('routeTableToAzureService'))]"
             ],
             "properties": {
                 "addressSpace": {
@@ -396,7 +384,7 @@
                         "properties": {
                             "addressPrefix": "[parameters('managedInstanceSubnetPrefix')]",
                             "routeTable": {
-                                "id": "[resourceId('Microsoft.Network/routeTables', parameters('routeTableToAzureService'))]"
+                                "id": "[resourceId('Microsoft.Network/routeTables', variables('routeTableToAzureService'))]"
                             }
                         }
                     }
@@ -406,7 +394,7 @@
         {
             "apiVersion": "2019-06-01",
             "type": "Microsoft.Network/networkSecurityGroups",
-            "name": "[parameters('nsgForManagedInstanceSubnet')]",
+            "name": "[variables('nsgForManagedInstanceSubnet')]",
             "location": "[resourceGroup().location]",
             "properties": {
                 "securityRules": [
@@ -694,9 +682,9 @@
         {
             "type": "Microsoft.Network/networkSecurityGroups/securityRules",
             "apiVersion": "2019-06-01",
-            "name": "[concat(parameters('nsgForManagedInstanceSubnet'), '/allow_geodr_inbound')]",
+            "name": "[concat(variables('nsgForManagedInstanceSubnet'), '/allow_geodr_inbound')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('nsgForManagedInstanceSubnet'))]"
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgForManagedInstanceSubnet'))]"
             ],
             "properties": {
                 "description": "Allow inbound geodr traffic inside the virtual network",
@@ -713,9 +701,9 @@
         {
             "type": "Microsoft.Network/networkSecurityGroups/securityRules",
             "apiVersion": "2019-06-01",
-            "name": "[concat(parameters('nsgForManagedInstanceSubnet'), '/allow_geodr_outbound')]",
+            "name": "[concat(variables('nsgForManagedInstanceSubnet'), '/allow_geodr_outbound')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('nsgForManagedInstanceSubnet'))]"
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgForManagedInstanceSubnet'))]"
             ],
             "properties": {
                 "description": "Allow outbound geodr traffic inside the virtual network",
@@ -732,9 +720,9 @@
         {
             "type": "Microsoft.Network/networkSecurityGroups/securityRules",
             "apiVersion": "2019-06-01",
-            "name": "[concat(parameters('nsgForManagedInstanceSubnet'), '/allow_health_probe_inbound')]",
+            "name": "[concat(variables('nsgForManagedInstanceSubnet'), '/allow_health_probe_inbound')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('nsgForManagedInstanceSubnet'))]"
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgForManagedInstanceSubnet'))]"
             ],
             "properties": {
                 "description": "Allow health probe",
@@ -751,9 +739,9 @@
         {
             "type": "Microsoft.Network/networkSecurityGroups/securityRules",
             "apiVersion": "2019-06-01",
-            "name": "[concat(parameters('nsgForManagedInstanceSubnet'), '/allow_linkedserver_outbound')]",
+            "name": "[concat(variables('nsgForManagedInstanceSubnet'), '/allow_linkedserver_outbound')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('nsgForManagedInstanceSubnet'))]"
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgForManagedInstanceSubnet'))]"
             ],
             "properties": {
                 "description": "Allow outbound linkedserver traffic inside the virtual network",
@@ -770,9 +758,9 @@
         {
             "type": "Microsoft.Network/networkSecurityGroups/securityRules",
             "apiVersion": "2019-06-01",
-            "name": "[concat(parameters('nsgForManagedInstanceSubnet'), '/allow_management_inbound')]",
+            "name": "[concat(variables('nsgForManagedInstanceSubnet'), '/allow_management_inbound')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('nsgForManagedInstanceSubnet'))]"
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgForManagedInstanceSubnet'))]"
             ],
             "properties": {
                 "description": "Allow inbound management traffic",
@@ -795,9 +783,9 @@
         {
             "type": "Microsoft.Network/networkSecurityGroups/securityRules",
             "apiVersion": "2019-06-01",
-            "name": "[concat(parameters('nsgForManagedInstanceSubnet'), '/allow_management_outbound')]",
+            "name": "[concat(variables('nsgForManagedInstanceSubnet'), '/allow_management_outbound')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('nsgForManagedInstanceSubnet'))]"
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgForManagedInstanceSubnet'))]"
             ],
             "properties": {
                 "description": "Allow outbound management traffic",
@@ -818,9 +806,9 @@
         {
             "type": "Microsoft.Network/networkSecurityGroups/securityRules",
             "apiVersion": "2019-06-01",
-            "name": "[concat(parameters('nsgForManagedInstanceSubnet'), '/allow_misubnet_inbound')]",
+            "name": "[concat(variables('nsgForManagedInstanceSubnet'), '/allow_misubnet_inbound')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('nsgForManagedInstanceSubnet'))]"
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgForManagedInstanceSubnet'))]"
             ],
             "properties": {
                 "description": "Allow inbound traffic inside the subnet",
@@ -837,9 +825,9 @@
         {
             "type": "Microsoft.Network/networkSecurityGroups/securityRules",
             "apiVersion": "2019-06-01",
-            "name": "[concat(parameters('nsgForManagedInstanceSubnet'), '/allow_misubnet_outbound')]",
+            "name": "[concat(variables('nsgForManagedInstanceSubnet'), '/allow_misubnet_outbound')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('nsgForManagedInstanceSubnet'))]"
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgForManagedInstanceSubnet'))]"
             ],
             "properties": {
                 "description": "Allow outbound traffic inside the subnet",
@@ -856,9 +844,9 @@
         {
             "type": "Microsoft.Network/networkSecurityGroups/securityRules",
             "apiVersion": "2019-06-01",
-            "name": "[concat(parameters('nsgForManagedInstanceSubnet'), '/allow_redirect_inbound')]",
+            "name": "[concat(variables('nsgForManagedInstanceSubnet'), '/allow_redirect_inbound')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('nsgForManagedInstanceSubnet'))]"
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgForManagedInstanceSubnet'))]"
             ],
             "properties": {
                 "description": "Allow inbound redirect traffic to Managed Instance inside the virtual network",
@@ -875,9 +863,9 @@
         {
             "type": "Microsoft.Network/networkSecurityGroups/securityRules",
             "apiVersion": "2019-06-01",
-            "name": "[concat(parameters('nsgForManagedInstanceSubnet'), '/allow_redirect_outbound')]",
+            "name": "[concat(variables('nsgForManagedInstanceSubnet'), '/allow_redirect_outbound')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('nsgForManagedInstanceSubnet'))]"
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgForManagedInstanceSubnet'))]"
             ],
             "properties": {
                 "description": "Allow outbound redirect traffic to Managed Instance inside the virtual network",
@@ -894,9 +882,9 @@
         {
             "type": "Microsoft.Network/networkSecurityGroups/securityRules",
             "apiVersion": "2019-06-01",
-            "name": "[concat(parameters('nsgForManagedInstanceSubnet'), '/allow_tds_inbound')]",
+            "name": "[concat(variables('nsgForManagedInstanceSubnet'), '/allow_tds_inbound')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('nsgForManagedInstanceSubnet'))]"
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgForManagedInstanceSubnet'))]"
             ],
             "properties": {
                 "description": "Allow access to data",
@@ -913,9 +901,9 @@
         {
             "type": "Microsoft.Network/networkSecurityGroups/securityRules",
             "apiVersion": "2019-06-01",
-            "name": "[concat(parameters('nsgForManagedInstanceSubnet'), '/deny_all_inbound')]",
+            "name": "[concat(variables('nsgForManagedInstanceSubnet'), '/deny_all_inbound')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('nsgForManagedInstanceSubnet'))]"
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgForManagedInstanceSubnet'))]"
             ],
             "properties": {
                 "provisioningState": "Succeeded",
@@ -933,9 +921,9 @@
         {
             "type": "Microsoft.Network/networkSecurityGroups/securityRules",
             "apiVersion": "2019-06-01",
-            "name": "[concat(parameters('nsgForManagedInstanceSubnet'), '/deny_all_outbound')]",
+            "name": "[concat(variables('nsgForManagedInstanceSubnet'), '/deny_all_outbound')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('nsgForManagedInstanceSubnet'))]"
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgForManagedInstanceSubnet'))]"
             ],
             "properties": {
                 "description": "Deny all other outbound traffic",
@@ -952,7 +940,7 @@
         {
             "type": "Microsoft.Network/routeTables",
             "apiVersion": "2019-04-01",
-            "name": "[parameters('routeTableToAzureService')]",
+            "name": "[variables('routeTableToAzureService')]",
             "location": "[resourceGroup().location]",
             "properties": {
                 "disableBgpRoutePropagation": false,
