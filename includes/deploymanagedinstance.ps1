@@ -143,6 +143,15 @@ function DeployManagedInstanceTemplate {
     Managed Instance Server Login:   $dbadminlogin
     Blob Storage Account Name:       $storagename
     Data Factory Name:               $dfname
+    Jumpbox VM Name:                 $jumpboxname
+    Jumpbox Admin Login:             $vmadminlogin
+    Jumpbox DNS Prefix:              $vmdnsprefix
+    Virtual Network Name:            $vnetname
+    Virtual Network Address Range:   $vnetaddressrange
+    Virtual Network Subnet Name:     $vmsubnetname
+    VM Subnet Range:                 $vmsubnetaddressrange
+    Managed Instance Subnet Name:    $misubnetname
+    Managed Instance Subnet Range:   $misubnetaddressrange
 
     To re-run in case of failure you can use:
     New-AzResourceGroupDeployment -ResourceGroupName `"$ResourceGroupName`" -TemplateFile `"$PSScriptRoot/managedinstance/dpi30managedinstance.json`" -managedInstanceName `"$dbservername`" -managedInstanceAdminLogin `"$dbadminlogin`" -storageAccountName `"$storagename`" -dataFactoryName `"$dfname`" -dataFactoryRegion `"$DataFactoryRegion`" -jumpboxName `"$jumpboxname`" -jumpboxAdminUsername `"$vmadminlogin`" -jumpboxDnsLabelPrefix `"$vmdnsprefix`" -virtualNetworkName `"$vnetname`" -virtualNetworkAddressPrefix `"$vnetaddressrange`" -defaultSubnetName `"$vmsubnetname`" -defaultSubnetPrefix `"$vmsubnetaddressrange`" -managedInstanceSubnetName `"$misubnetname`" -managedInstanceSubnetPrefix `"$misubnetaddressrange`"
