@@ -13,6 +13,7 @@ try {
     . ("$PSScriptRoot/includes/deployresourcegroup.ps1")
     . ("$PSScriptRoot/includes/deploymoderndatawarehouse.ps1")
     . ("$PSScriptRoot/includes/deploysimple.ps1")
+    . ("$PSScriptRoot/includes/deploymanagedinstance.ps1")
 }
 catch {
     Write-Host "Error while loading supporting PowerShell Scripts" 
@@ -25,12 +26,16 @@ function DeployTemplate {
         $template
     )
     Clear-Host
+    # Create our resource group to deploy our azure resources to
     $resourceGroupInformation = DeployResourceGroup
-    if ($template -eq "datawarehouse") {
+    if ($template -eq "moderndatawarehouse") {
         DeployDWTemplate -ResourceGroupName $resourceGroupInformation.ResourceGroupName -DataFactoryRegion $resourceGroupInformation.DataFactoryRegion
     }
     if ($template -eq "simple") {
         DeploySimpleTemplate -ResourceGroupName $resourceGroupInformation.ResourceGroupName -DataFactoryRegion $resourceGroupInformation.DataFactoryRegion
+    }
+    if ($template -eq "managedinstance") {
+        DeployManagedInstanceTemplate -ResourceGroupName $resourceGroupInformation.ResourceGroupName -DataFactoryRegion $resourceGroupInformation.DataFactoryRegion
     }
 }
 
@@ -72,20 +77,36 @@ if ($subselection -ne 0) {
 } 
 
 Clear-Host
-if (DetermineTemplate) {
-    Write-Host $datawarehousedescription
-    $confirmation = Read-Host "`r`nWould you like to continue? (y/n)"
-    if ($confirmation -eq "y") {
-        DeployTemplate -template "datawarehouse"
-    } else {
-        exit
+$template = DetermineTemplate
+switch ($template) {
+    "moderndatawarehouse" {
+        Write-Host $datawarehousedescription
+        $confirmation = Read-Host "`r`nWould you like to continue? (y/n)"
+        if ($confirmation -eq "y") {
+            DeployTemplate -template $template
+        } else {
+            exit
+        }
+        break
     }
-} else {
-    Write-Host $simpledescription
-    $confirmation = Read-Host "`r`nWould you like to continue? (y/n)"
-    if ($confirmation -eq "y") {
-        DeployTemplate -template "simple"
-    } else {
-        exit
+    "simple" {
+        Write-Host $simpledescription
+        $confirmation = Read-Host "`r`nWould you like to continue? (y/n)"
+        if ($confirmation -eq "y") {
+            DeployTemplate -template $template
+        } else {
+            exit
+        }
+        break
     }
- }
+    "managedinstance" {
+        Write-Host $managedinstancedescription
+        $confirmation = Read-Host "`r`nWould you like to continue? (y/n)"
+        if ($confirmation -eq "y") {
+            DeployTemplate -template $template
+        } else {
+            exit
+        }
+        break
+    }
+}
