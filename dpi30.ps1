@@ -103,7 +103,6 @@ function DataFactoryNameValidation {
 function DetermineTemplate {
     # Questionaire to determine best fit, Current logic is if you answer yes at least twice you should use Modern Data Warehouse
     $dwscore = 0
-    Clear-Host
     Write-Host "`r`nLet's determine the best deployment for your situation, Please answer the next few questions with y (yes) or n (no)."
 
     $confirmation = Read-Host "`r`nWill you have more than 1 TB of data? (y/n)"
@@ -131,19 +130,11 @@ function DetermineTemplate {
         $dwscore++
     }
 
-    if ($dwscore -ge 2) {
-        return $true
-    } else {
-        return $false
-    }
+    return $dwscore -ge 2
 }
 
 function DeployResourceGroup {
     # Function to gather information and deploy the resource group
-    # TODO: Determine best way to have input while it is gathering Region Data
-    Clear-Host
-    # Gathers all US based regions that can deploy SQL and Databricks
-    # TODO: Determine best way to allow this to be international
     
     Write-Host "`r`nFirst, let's create a Resource Group to put all these services in."
     $ResourceGroupName = Read-Host "What would you like the Resource Group named"
@@ -156,7 +147,6 @@ function DeployResourceGroup {
     $ExistingResourceGroup = Get-AzResourceGroup -ResourceGroupName $ResourceGroupName -ErrorVariable notPresent -ErrorAction SilentlyContinue
     if($notPresent) {
         #Creating lists of geography and default data factory regions for those geographies
-        $regionfilter = ""
         $datafactoryregion = ""
         $geographylist = [ordered]@{
             [int]"1" = "US"
@@ -187,7 +177,7 @@ function DeployResourceGroup {
         #Write-Host "Selected $($geographyselection) which is $($geographylist.[int]$geographyselection) and our Data Factory region is $($datafactoryregion)"
         
         #Prompting for region selection.
-        $rawlocationlist = ((Get-AzLocation | Where-Object Providers -like "Microsoft.Databricks" | Where-Object Providers -like "Microsoft.Sql" | Where-Object DisplayName -like "* $($geographylist.[int]$geographyselection)*")) | Sort-Object -property DisplayName | Select DisplayName
+        $rawlocationlist = ((Get-AzLocation | Where-Object Providers -like "Microsoft.Databricks" | Where-Object Providers -like "Microsoft.Sql" | Where-Object DisplayName -like "* $($geographylist.[int]$geographyselection)*")) | Sort-Object -property DisplayName | Select-Object DisplayName
         Write-Host "`r`nHere are the regions available for deployment:`r`n"
         $locationlist = [ordered] @{}
 
@@ -393,6 +383,7 @@ function DeployTemplate {
         # The Template name we intend to deploy
         $template
     )
+    Clear-Host
     $resourceGroupInformation = DeployResourceGroup
     if ($template -eq "datawarehouse") {
         DeployDWTemplate -ResourceGroupName $resourceGroupInformation.ResourceGroupName -DataFactoryRegion $resourceGroupInformation.DataFactoryRegion
@@ -426,7 +417,7 @@ $currentsubfull = $currentsub.Subscription.Name + " (" + $currentsub.Subscriptio
 Write-Host "Welcome to the DPi30 Deployment Wizard!"
 Write-Host "Before we get started, we need to select the subscription for this deployment:`r`n"
 #Write-Host  "Current Subscription: $($currentsubfull)`r`n" -ForegroundColor Yellow
-$rawsubscriptionlist = Get-AzSubscription | where {$_.State -ne "Disabled"} | Sort-Object -property Name | Select Name, Id 
+$rawsubscriptionlist = Get-AzSubscription | Where-Object {$_.State -ne "Disabled"} | Sort-Object -property Name | Select-Object Name, Id 
 $subscriptionlist = [ordered]@{}
 $subscriptionlist.Add(0, "CURRENT SUBSCRIPTION: $($currentsubfull)")
 $subcount = 1
@@ -456,6 +447,7 @@ if ($subselection -ne 0) {
     Write-Host "`r`nChanged to Subscription $($changesub.Name)" -ForegroundColor Green
 } 
 
+Clear-Host
 if (DetermineTemplate) {
     Write-Host $datawarehousedescription
     $confirmation = Read-Host "`r`nWould you like to continue? (y/n)"
