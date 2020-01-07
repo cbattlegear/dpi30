@@ -163,40 +163,58 @@ function CIDRValidation {
     }
 }
 
-#General user input validating function
-function validateResponse {
+#Validate yes or no question input
+function BoolValidation {
     Param(
-        #User input response
-        $response,
-        #Response input type
-        $responsetype
+        #User input
+        $UserInput
     )
-
-    $result = switch($responsetype) {
-        #Yes or No question
-        "bool" {
-            $validbool = @("y", "n", "yes", "no")
-            if ($response.ToLower() -in $validbool) {
-                return $true
-            }
-            else {
-                Write-Host "Please answer Yes(y) or No(n)" -ForegroundColor Yellow
-                return $false
-            }
-        }
-        #Integer input question
-        "int" {
-            $intref = 0
-            if( [int32]::TryParse( $response , [ref]$intref )) {
-              return $true
-            }
-            else {
-              Write-Host "Please enter a valid number" -ForegroundColor Yellow
-              return $false
-            }
-        }
+    $validbool = @("y", "n", "yes", "no")
+    if ($UserInput.ToLower() -in $validbool) {
+        return @{Result=$true; Message="Valid"}
     }
-    return $result
+    else {
+        return @{Result=$false; Message="Please answer Yes(y) or No(n)"}
+    }
+}
+
+#Validate integer based question input both as an input value but also the number of options available
+function IntValidation {
+    Param(
+        #User input
+        $UserInput,
+        #Options Count to verify its within range
+        $OptionCount
+    )
+    $intref = 0
+    if( [int32]::TryParse( $UserInput , [ref]$intref ) -and [int32]$UserInput -le $OptionCount -and [int32]$UserInput -gt 0) {
+        return @{Result=$true; Message="Valid"}
+    }
+    else {
+      return @{Result=$false; Message="Please enter a valid selection number"}
+    }
+}
+
+#Validating the input of a yes no for continuing with deployment, more specific than a normal boolean situation.
+function ProceedValidation {
+    $InputMessage = "`r`nWould you like to continue? "
+    Write-Host $InputMessage -NoNewLine
+    $confirmation = Read-Host
+    $valid = BoolValidation -UserInput $confirmation
+    while(!($valid.Result)){
+        Write-Host $valid.Message -ForegroundColor Yellow
+        Write-Host $InputMessage -NoNewLine
+        $confirmation = Read-Host
+        $valid = BoolValidation -UserInput $confirmation
+    }
+    if($confirmation.ToLower().SubString(0,1) -eq "n"){
+        #Stop script because they said no on continuing
+        Write-Host "Stopping!!! Any resources that were created up until this point were not removed and would require you to cleanup if desired" -ForegroundColor Red
+        exit
+    } else {
+        return $confirmation.ToLower().SubString(0,1)
+    }
+    
 }
 
 ### End Validation Functions ###
