@@ -163,4 +163,40 @@ function CIDRValidation {
     }
 }
 
+#General user input validating function
+function validateResponse {
+    Param(
+        #User input response
+        $response,
+        #Response input type
+        $responsetype
+    )
+
+    $result = switch($responsetype) {
+        #Yes or No question
+        "bool" {
+            $validbool = @("y", "n", "yes", "no")
+            if ($response.ToLower() -in $validbool) {
+                return $true
+            }
+            else {
+                Write-Host "Please answer Yes(y) or No(n)" -ForegroundColor Yellow
+                return $false
+            }
+        }
+        #Integer input question
+        "int" {
+            $intref = 0
+            if( [int32]::TryParse( $response , [ref]$intref )) {
+              return $true
+            }
+            else {
+              Write-Host "Please enter a valid number" -ForegroundColor Yellow
+              return $false
+            }
+        }
+    }
+    return $result
+}
+
 ### End Validation Functions ###
