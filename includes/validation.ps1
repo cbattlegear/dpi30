@@ -77,11 +77,11 @@ function DatabaseLoginNameValidation {
         # Name to verify
         $Name
     )
-    # Database Login name restrictions: Your login name must not include non-alphanumeric characters and must not start with numbers or symbols
+    # Login name restrictions: Your login name must not include non-alphanumeric characters and must not start with numbers or symbols
     if ($Name -cmatch "^[^0-9][a-zA-Z0-9]{1,128}$") {
         return @{Result=$true; Message="Valid"}
     } else {
-        return @{Result=$false; Message="Database Login name restrictions: Your login name must not include non-alphanumeric characters and must not start with numbers or symbols"}
+        return @{Result=$false; Message="Login name restrictions: Your login name must not include non-alphanumeric characters and must not start with numbers or symbols"}
     }
 }
 
@@ -95,6 +95,71 @@ function DataFactoryNameValidation {
         return @{Result=$true; Message="Valid"}
     } else {
         return @{Result=$false; Message="Data Factory name restrictions: contain only letters, numbers and hyphens. The first and last characters must be a letter or number."}
+    }
+}
+
+function VMNameValidation {
+    Param(
+        # Name to verify
+        $Name
+    )
+    # Virtual Machine name restrictions: Alphanumeric characters, underscores, and hyphens are allowed, and the name must be 1-15 characters long.
+    if ($Name -cmatch "^[\w-]{1,15}$") {
+        return @{Result=$true; Message="Valid"}
+    } else {
+        return @{Result=$false; Message="Virtual Machine name restrictions: Alphanumeric characters, underscores, and hyphens are allowed, and the name must be 1-15 characters long."}
+    }
+}
+
+function DNSPrefixValidation {
+    Param(
+        # Name to verify
+        $Name
+    )
+    # DNS Prefix restrictions: Alphanumeric characters and hyphens are allowed, and the name must be 1-15 characters long.
+    if ($Name -cmatch "^[a-zA-Z0-9-]{1,15}$") {
+        return @{Result=$true; Message="Valid"}
+    } else {
+        return @{Result=$false; Message="DNS Prefix restrictions: Alphanumeric characters and hyphens are allowed, and the name must be 1-15 characters long."}
+    }
+}
+
+function vNetNameValidation {
+    Param(
+        # Name to verify
+        $Name
+    )
+    # Virtual Network name restrictions: Alphanumeric characters, periods, underscores, and hyphens are allowed, and the name must be 2-64 characters long.
+    if ($Name -cmatch "^[\w\.-]{2,64}$") {
+        return @{Result=$true; Message="Valid"}
+    } else {
+        return @{Result=$false; Message="Virtual Network name restrictions: Alphanumeric characters, periods, underscores, and hyphens are allowed, and the name must be 2-64 characters long."}
+    }
+}
+
+function AzureNetworkingNameValidation {
+    Param(
+        # Name to verify
+        $Name
+    )
+    # Azure Network items name restrictions: Alphanumeric characters, periods, underscores, and hyphens are allowed, and the name must be 2-80 characters long.
+    if ($Name -cmatch "^[\w\.-]{2,80}$") {
+        return @{Result=$true; Message="Valid"}
+    } else {
+        return @{Result=$false; Message="Azure Network items name restrictions: Alphanumeric characters, periods, underscores, and hyphens are allowed, and the name must be 2-64 characters long."}
+    }
+}
+
+function CIDRValidation {
+    Param(
+        # Name to verify
+        $Name
+    )
+    # Cidr validation regex from http://blog.markhatton.co.uk/2011/03/15/regular-expressions-for-ip-addresses-cidr-ranges-and-hostnames/
+    if ($Name -cmatch "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(3[0-2]|[1-2][0-9]|[0-9]))$") {
+        return @{Result=$true; Message="Valid"}
+    } else {
+        return @{Result=$false; Message="Please use valid CIDR notation. Example: 10.0.0.0/16"}
     }
 }
 

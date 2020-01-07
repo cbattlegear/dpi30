@@ -17,7 +17,7 @@ It will deploy the following to your selected Azure Subscription:
 "@
 
 function DeployManagedInstanceTemplate {
-    # Function to gather information and deploy the Simple Template
+    # Function to gather information and deploy the Managed Instance Template
     Param(
         # The resource group name that the template will be deployed to
         $ResourceGroupName,
@@ -25,7 +25,7 @@ function DeployManagedInstanceTemplate {
         $DataFactoryRegion
     )
     
-    Write-Host "`r`nNow let's get the Simple template deployed, just a few questions and we can get this kicked off."
+    Write-Host "`r`nNow let's get the Managed Instance template deployed, just a few questions and we can get this kicked off."
     $dbservername = Read-Host "What would you like to name the Database Server?"
     $valid = DatabaseServerNameValidation -Name $dbservername
     while(!($valid.Result)){
@@ -45,14 +45,6 @@ function DeployManagedInstanceTemplate {
 
     $dbadminpassword = Read-Host "Password" -AsSecureString
 
-    $dbname = Read-Host "What would you like to name the Database?"
-    $valid = DatabaseNameValidation -Name $dbname
-    while(!($valid.Result)){
-        Write-Host $valid.Message -ForegroundColor Red
-        $dbname = Read-Host "What would you like to name the Database?"
-        $valid = DatabaseNameValidation -Name $dbname
-    }
-
     $storagename = Read-Host "What would you like to name the Blob storage account?"
     $valid = StorageAccountNameValidation -Name $storagename
     while(!($valid.Result)){ 
@@ -68,24 +60,106 @@ function DeployManagedInstanceTemplate {
         $dfname = Read-Host "What would you like to name the Data Factory?"
         $valid = DataFactoryNameValidation -Name $dfname 
     }
+
+    $jumpboxname = Read-Host "What would you like to name the Jump Box Virtual Machine?"
+    $valid = VMNameValidation -Name $jumpboxname 
+    while(!($valid.Result)){ 
+        Write-Host $valid.Message -ForegroundColor Red
+        $jumpboxname = Read-Host "What would you like to name the Jump Box Virtual Machine?"
+        $valid = VMNameValidation -Name $jumpboxname 
+    }
+
+    $vmadminlogin = Read-Host "What username would you like to use for the Virtual Machine?"
+    $valid = DatabaseLoginNameValidation -Name $vmadminlogin
+    while(!($valid.Result)){
+        Write-Host $valid.Message -ForegroundColor Red
+        $vmadminlogin = Read-Host "What username would you like to use for the Virtual Machine?"
+        $valid = DatabaseLoginNameValidation -Name $vmadminlogin
+    }
+
+    $vmadminpassword = Read-Host "Password" -AsSecureString
+
+    $vmdnsprefix = Read-Host "What DNS Prefix (beginning of the host name) would you like to use for the Virtual Machine?"
+    $valid = DNSPrefixValidation -Name $vmdnsprefix
+    while(!($valid.Result)){
+        Write-Host $valid.Message -ForegroundColor Red
+        $vmdnsprefix = Read-Host "What DNS Prefix (beginning of the host name) would you like to use for the Virtual Machine?"
+        $valid = DNSPrefixValidation -Name $vmdnsprefix
+    }
+
+    $vnetname = Read-Host "What name would you like to use for the Virtual Network?"
+    $valid = vNetNameValidation -Name $vnetname
+    while(!($valid.Result)){
+        Write-Host $valid.Message -ForegroundColor Red
+        $vnetname = Read-Host "What name would you like to use for the Virtual Network?"
+        $valid = vNetNameValidation -Name $vnetname
+    }
+
+    $vnetaddressrange = Read-Host "What address range would you like to use for the Virtual Network? (ex. 10.0.0.0/16)"
+    $valid = CIDRValidation -Name $vnetaddressrange
+    while(!($valid.Result)){
+        Write-Host $valid.Message -ForegroundColor Red
+        $vnetaddressrange = Read-Host "What address range would you like to use for the Virtual Network? (ex. 10.0.0.0/16)"
+        $valid = CIDRValidation -Name $vnetaddressrange
+    }
+
+    $vmsubnetname = Read-Host "What subnet name would you like to use for the Virtual Machine?"
+    $valid = AzureNetworkingNameValidation -Name $vmsubnetname
+    while(!($valid.Result)){
+        Write-Host $valid.Message -ForegroundColor Red
+        $vmsubnetname = Read-Host "What subnet name would you like to use for the Virtual Machine?"
+        $valid = AzureNetworkingNameValidation -Name $vmsubnetname
+    }
+
+    $vmsubnetaddressrange = Read-Host "What address range would you like to use for the Virtual Machine Subnet? (Must be included in the Virtual Network Subnet range of $vnetaddressrange)"
+    $valid = CIDRValidation -Name $vmsubnetaddressrange
+    while(!($valid.Result)){
+        Write-Host $valid.Message -ForegroundColor Red
+        $vmsubnetaddressrange = Read-Host "What address range would you like to use for the Virtual Machine Subnet? (Must be included in the Virtual Network Subnet range of $vnetaddressrange)"
+        $valid = CIDRValidation -Name $vmsubnetaddressrange
+    }
+
+    $misubnetname = Read-Host "What subnet name would you like to use for the Managed Instance?"
+    $valid = AzureNetworkingNameValidation -Name $misubnetname
+    while(!($valid.Result)){
+        Write-Host $valid.Message -ForegroundColor Red
+        $misubnetname = Read-Host "What subnet name would you like to use for the Managed Instance?"
+        $valid = AzureNetworkingNameValidation -Name $misubnetname
+    }
+
+    $misubnetaddressrange = Read-Host "What address range would you like to use for the Managed Instance Subnet? (Must be included in the Virtual Network Subnet range of $vnetaddressrange)"
+    $valid = CIDRValidation -Name $misubnetaddressrange
+    while(!($valid.Result)){
+        Write-Host $valid.Message -ForegroundColor Red
+        $misubnetaddressrange = Read-Host "What address range would you like to use for the Managed Instance Subnet? (Must be included in the Virtual Network Subnet range of $vnetaddressrange)"
+        $valid = CIDRValidation -Name $misubnetaddressrange
+    }
     
-    Write-Host "Ok! That's everything, the deployment will take a few minutes, to confirm:"
+    Write-Host "Ok! That's everything, the deployment will take up to 3 hours, to confirm:"
     $confirmtext = @"
 
     Resource Group Name:             $ResourceGroupName
-    Database Server Name:            $dbservername
-    Database Server Login:           $dbadminlogin
-    Database Name:                   $dwname
+    Managed Instance Server Name:    $dbservername
+    Managed Instance Server Login:   $dbadminlogin
     Blob Storage Account Name:       $storagename
     Data Factory Name:               $dfname
+    Jumpbox VM Name:                 $jumpboxname
+    Jumpbox Admin Login:             $vmadminlogin
+    Jumpbox DNS Prefix:              $vmdnsprefix
+    Virtual Network Name:            $vnetname
+    Virtual Network Address Range:   $vnetaddressrange
+    Virtual Network Subnet Name:     $vmsubnetname
+    VM Subnet Range:                 $vmsubnetaddressrange
+    Managed Instance Subnet Name:    $misubnetname
+    Managed Instance Subnet Range:   $misubnetaddressrange
 
     To re-run in case of failure you can use:
-    New-AzResourceGroupDeployment -ResourceGroupName `"$ResourceGroupName`" -TemplateFile `"$PSScriptRoot/simple/dpi30simple.json`" -azureSqlServerName `"$dbservername`" -azureSqlServerAdminLogin `"$dbadminlogin`" -azureSqlDatabaseName `"$dbname`" -storageAccountName `"$storagename`" -dataFactoryName `"$dfname` -dataFactoryRegion `"$DataFactoryRegion`"
+    New-AzResourceGroupDeployment -ResourceGroupName `"$ResourceGroupName`" -TemplateFile `"$PSScriptRoot/../managedinstance/dpi30managedinstance.json`" -managedInstanceName `"$dbservername`" -managedInstanceAdminLogin `"$dbadminlogin`" -storageAccountName `"$storagename`" -dataFactoryName `"$dfname`" -dataFactoryRegion `"$DataFactoryRegion`" -jumpboxName `"$jumpboxname`" -jumpboxAdminUsername `"$vmadminlogin`" -jumpboxDnsLabelPrefix `"$vmdnsprefix`" -virtualNetworkName `"$vnetname`" -virtualNetworkAddressPrefix `"$vnetaddressrange`" -defaultSubnetName `"$vmsubnetname`" -defaultSubnetPrefix `"$vmsubnetaddressrange`" -managedInstanceSubnetName `"$misubnetname`" -managedInstanceSubnetPrefix `"$misubnetaddressrange`"
 "@
     Write-Host $confirmtext
     $confirmation = Read-Host "Do you wish to continue? (y/n)"
     if ($confirmation -eq "y") {
         Write-Host "Deploying Template..."
-        New-AzResourceGroupDeployment -ResourceGroupName $ResourceGroupName -TemplateFile "$PSScriptRoot/simple/dpi30simple.json" -azureSqlServerName $dbservername -azureSqlServerAdminLogin $dbadminlogin -azureSqlServerAdminPassword $dbadminpassword -azureSqlDataWarehouseName $dbname -storageAccountName $storagename -dataFactoryName $dfname -dataFactoryRegion $DataFactoryRegion
+        New-AzResourceGroupDeployment -ResourceGroupName $ResourceGroupName -TemplateFile "$PSScriptRoot/../managedinstance/dpi30managedinstance.json" -managedInstanceName $dbservername -managedInstanceAdminLogin $dbadminlogin -managedInstanceAdminPassword $dbadminpassword -storageAccountName $storagename -dataFactoryName $dfname -dataFactoryRegion $DataFactoryRegion -jumpboxName $jumpboxname -jumpboxAdminUsername $vmadminlogin -jumpboxAdminPassword $vmadminpassword -jumpboxDnsLabelPrefix $vmdnsprefix -virtualNetworkName $vnetname -virtualNetworkAddressPrefix $vnetaddressrange -defaultSubnetName $vmsubnetname -defaultSubnetPrefix $vmsubnetaddressrange -managedInstanceSubnetName $misubnetname -managedInstanceSubnetPrefix $misubnetaddressrange
     }
 }

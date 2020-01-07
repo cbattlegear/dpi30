@@ -8,6 +8,7 @@ If you know what path you want to do right away go directly to either the simple
 
 * [Simple Deployment](simple/)
 * [Modern Data Warehouse Deployment](moderndatawarehouse/)
+* [Managed Instance Deployment](managedinstance/)
 
 If you are unsure which to choose you can use the Decision Tree and Deployment powershell script that will help you decide and deploy the best template.
 
