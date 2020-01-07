@@ -10,40 +10,52 @@ function DetermineTemplate {
     $dwscore = 0
     Write-Host "`r`nLet's determine the best deployment for your situation, Please answer the next few questions with y (yes) or n (no)."
 
-    $confirmation = Read-Host "`r`nWill you have more than 1 TB of data? (y/n)"
-    if ($confirmation -eq "y") {
-        $dwscore++
-    }
+    
+    $dwscore = DwCalculator "`r`nWill you have more than 1 TB of data? (y/n)" $dwscore
+    
+    $dwscore = DwCalculator "`r`nDo you have a highly analytics-based workload? (y/n)" $dwscore
+ 
+    $dwscore = DwCalculator "`r`nDo you want to utilize any real-time or streaming data? (y/n)" $dwscore
 
-    $confirmation = Read-Host "`r`nDo you have a highly analytics-based workload? (y/n)"
-    if ($confirmation -eq "y") {
-        $dwscore++
-    }
+    $dwscore = DwCalculator "`r`nWould you like to integrate machine learning into your business intelligence? (y/n)" $dwscore
 
-    $confirmation = Read-Host "`r`nDo you want to utilize any real-time or streaming data? (y/n)"
-    if ($confirmation -eq "y") {
-        $dwscore++
-    }
-
-    $confirmation = Read-Host "`r`nWould you like to integrate machine learning into your business intelligence? (y/n)"
-    if ($confirmation -eq "y") {
-        $dwscore++
-    }
-
-    $confirmation = Read-Host "`r`nDo you have Python, Scala, R, or Spark experience? (y/n)"
-    if ($confirmation -eq "y") {
-        $dwscore++
-    }
+    $dwscore = DwCalculator "`r`nDo you have Python, Scala, R, or Spark experience? (y/n)" $dwscore
 
     if ($dwscore -ge 2) {
         return "moderndatawarehouse"
     } else {
 
-        $confirmation = Read-Host "`r`nWould you like to use SQL Agent, Cross Database Queries, or replicate to other SQL Servers? (y/n)"
-        if ($confirmation -eq "y") {
-            return "managedinstance"
-        } else {
-            return "simple"
+        while(1) {
+            $confirmation = Read-Host "`r`nWould you like to use SQL Agent, Cross Database Queries, or replicate to other SQL Servers? (y/n)"
+            $check = validateResponse $confirmation "bool"
+            if ($check) {
+                if ($confirmation -eq "y") {
+                    return "managedinstance"
+                } else {
+                    return "simple"
+                }
+            }
         }
     }
+}
+
+function DwCalculator {
+    Param(
+        #question asked
+        $question,
+        #Score for DW
+        $dwscore
+    )
+    
+    while(1) {
+        $confirmation = Read-Host $question
+        $check = validateResponse $confirmation "bool"
+        if ($check) {
+            if ($confirmation.ToLower().SubString(0,1) -eq "y") {
+                $dwscore++
+            }
+            break
+        }
+    }
+    return $dwscore
 }
