@@ -7,8 +7,6 @@ Function that will walk through all the required information to deploy the manag
 #>
 
 $managedinstancedescription = @"
-`r`nBased on your answers we suggest the Managed Instance template.
-It will deploy the following to your selected Azure Subscription:
     * SQL Managed Instance (General Purpose, Gen 5 4 Cores)
     * Azure Storage Account (Blob Storage)
     * Azure Data Factory
@@ -26,116 +24,130 @@ function DeployManagedInstanceTemplate {
     )
     
     Write-Host "`r`nNow let's get the Managed Instance template deployed, just a few questions and we can get this kicked off."
-    $dbservername = Read-Host "What would you like to name the Database Server?"
+    
+    $InstanceMessage = "`r`nWhat would you like to name the Managed Instance?"
+    $dbservername = Read-Host $InstanceMessage
     $valid = DatabaseServerNameValidation -Name $dbservername
     while(!($valid.Result)){
         # Validation loop (Keep trying until you get the name right)
-        Write-Host $valid.Message -ForegroundColor Red
-        $dbservername = Read-Host "What would you like to name the Database Server?"
+        Write-Host $valid.Message -ForegroundColor Yellow
+        $dbservername = Read-Host $InstanceMessage
         $valid = DatabaseServerNameValidation -Name $dbservername
     }
 
-    $dbadminlogin = Read-Host "What username would you like to use for the Database Server?"
+    $InstanceMessage = "`r`nWhat username would you like to use for the Managed Instance?"
+    $dbadminlogin = Read-Host $InstanceMessage
     $valid = DatabaseLoginNameValidation -Name $dbadminlogin
     while(!($valid.Result)){
-        Write-Host $valid.Message -ForegroundColor Red
-        $dbadminlogin = Read-Host "What username would you like to use for the Database Server?"
+        Write-Host $valid.Message -ForegroundColor Yellow
+        $dbadminlogin = Read-Host $InstanceMessage
         $valid = DatabaseLoginNameValidation -Name $dbadminlogin
     }
 
     $dbadminpassword = Read-Host "Password" -AsSecureString
 
-    $storagename = Read-Host "What would you like to name the Blob storage account?"
+    $InstanceMessage = "`r`nWhat would you like to name the Blob storage account?"
+    $storagename = Read-Host $InstanceMessage
     $valid = StorageAccountNameValidation -Name $storagename
     while(!($valid.Result)){ 
-        Write-Host $valid.Message -ForegroundColor Red
-        $storagename = Read-Host "What would you like to name the Blob storage account?"
+        Write-Host $valid.Message -ForegroundColor Yellow
+        $storagename = Read-Host $InstanceMessage
         $valid = StorageAccountNameValidation -Name $storagename
     }
 
-    $dfname = Read-Host "What would you like to name the Data Factory?"
+    $InstanceMessage = "`r`nWhat would you like to name the Data Factory?"
+    $dfname = Read-Host $InstanceMessage
     $valid = DataFactoryNameValidation -Name $dfname 
     while(!($valid.Result)){ 
-        Write-Host $valid.Message -ForegroundColor Red
-        $dfname = Read-Host "What would you like to name the Data Factory?"
+        Write-Host $valid.Message -ForegroundColor Yellow
+        $dfname = Read-Host $InstanceMessage
         $valid = DataFactoryNameValidation -Name $dfname 
     }
 
-    $jumpboxname = Read-Host "What would you like to name the Jump Box Virtual Machine?"
+    $InstanceMessage = "`r`nWhat would you like to name the Jump Box Virtual Machine?"
+    $jumpboxname = Read-Host $InstanceMessage
     $valid = VMNameValidation -Name $jumpboxname 
     while(!($valid.Result)){ 
-        Write-Host $valid.Message -ForegroundColor Red
-        $jumpboxname = Read-Host "What would you like to name the Jump Box Virtual Machine?"
+        Write-Host $valid.Message -ForegroundColor Yellow
+        $jumpboxname = Read-Host $InstanceMessage
         $valid = VMNameValidation -Name $jumpboxname 
     }
 
-    $vmadminlogin = Read-Host "What username would you like to use for the Virtual Machine?"
+    $InstanceMessage = "`r`nWhat username would you like to use for the Virtual Machine?"
+    $vmadminlogin = Read-Host $InstanceMessage
     $valid = DatabaseLoginNameValidation -Name $vmadminlogin
     while(!($valid.Result)){
-        Write-Host $valid.Message -ForegroundColor Red
-        $vmadminlogin = Read-Host "What username would you like to use for the Virtual Machine?"
+        Write-Host $valid.Message -ForegroundColor Yellow
+        $vmadminlogin = Read-Host $InstanceMessage
         $valid = DatabaseLoginNameValidation -Name $vmadminlogin
     }
 
     $vmadminpassword = Read-Host "Password" -AsSecureString
 
-    $vmdnsprefix = Read-Host "What DNS Prefix (beginning of the host name) would you like to use for the Virtual Machine?"
+    $InstanceMessage = "`r`nWhat DNS Prefix (beginning of the host name) would you like to use for the Virtual Machine?"
+    $vmdnsprefix = Read-Host $InstanceMessage
     $valid = DNSPrefixValidation -Name $vmdnsprefix
     while(!($valid.Result)){
-        Write-Host $valid.Message -ForegroundColor Red
-        $vmdnsprefix = Read-Host "What DNS Prefix (beginning of the host name) would you like to use for the Virtual Machine?"
+        Write-Host $valid.Message -ForegroundColor Yellow
+        $vmdnsprefix = Read-Host $InstanceMessage
         $valid = DNSPrefixValidation -Name $vmdnsprefix
     }
 
-    $vnetname = Read-Host "What name would you like to use for the Virtual Network?"
+    $InstanceMessage = "`r`nWhat name would you like to use for the Virtual Network?"
+    $vnetname = Read-Host $InstanceMessage
     $valid = vNetNameValidation -Name $vnetname
     while(!($valid.Result)){
-        Write-Host $valid.Message -ForegroundColor Red
-        $vnetname = Read-Host "What name would you like to use for the Virtual Network?"
+        Write-Host $valid.Message -ForegroundColor Yellow
+        $vnetname = Read-Host $InstanceMessage
         $valid = vNetNameValidation -Name $vnetname
     }
 
-    $vnetaddressrange = Read-Host "What address range would you like to use for the Virtual Network? (ex. 10.0.0.0/16)"
+    $InstanceMessage = "`r`nWhat address range would you like to use for the Virtual Network? (ex. 10.0.0.0/16)"
+    $vnetaddressrange = Read-Host $InstanceMessage
     $valid = CIDRValidation -Name $vnetaddressrange
     while(!($valid.Result)){
-        Write-Host $valid.Message -ForegroundColor Red
-        $vnetaddressrange = Read-Host "What address range would you like to use for the Virtual Network? (ex. 10.0.0.0/16)"
+        Write-Host $valid.Message -ForegroundColor Yellow
+        $vnetaddressrange = Read-Host $InstanceMessage
         $valid = CIDRValidation -Name $vnetaddressrange
     }
 
-    $vmsubnetname = Read-Host "What subnet name would you like to use for the Virtual Machine?"
+    $InstanceMessage = "`r`nWhat subnet name would you like to use for the Virtual Machine?"
+    $vmsubnetname = Read-Host $InstanceMessage
     $valid = AzureNetworkingNameValidation -Name $vmsubnetname
     while(!($valid.Result)){
-        Write-Host $valid.Message -ForegroundColor Red
-        $vmsubnetname = Read-Host "What subnet name would you like to use for the Virtual Machine?"
+        Write-Host $valid.Message -ForegroundColor Yellow
+        $vmsubnetname = Read-Host $InstanceMessage
         $valid = AzureNetworkingNameValidation -Name $vmsubnetname
     }
 
-    $vmsubnetaddressrange = Read-Host "What address range would you like to use for the Virtual Machine Subnet? (Must be included in the Virtual Network Subnet range of $vnetaddressrange)"
+    $InstanceMessage = "`r`nWhat address range would you like to use for the Virtual Machine Subnet? (Must be included in the Virtual Network Subnet range of $vnetaddressrange)"
+    $vmsubnetaddressrange = Read-Host $InstanceMessage
     $valid = CIDRValidation -Name $vmsubnetaddressrange
     while(!($valid.Result)){
-        Write-Host $valid.Message -ForegroundColor Red
-        $vmsubnetaddressrange = Read-Host "What address range would you like to use for the Virtual Machine Subnet? (Must be included in the Virtual Network Subnet range of $vnetaddressrange)"
+        Write-Host $valid.Message -ForegroundColor Yellow
+        $vmsubnetaddressrange = Read-Host $InstanceMessage
         $valid = CIDRValidation -Name $vmsubnetaddressrange
     }
 
-    $misubnetname = Read-Host "What subnet name would you like to use for the Managed Instance?"
+    $InstanceMessage = "`r`nWhat subnet name would you like to use for the Managed Instance?"
+    $misubnetname = Read-Host $InstanceMessage
     $valid = AzureNetworkingNameValidation -Name $misubnetname
     while(!($valid.Result)){
-        Write-Host $valid.Message -ForegroundColor Red
-        $misubnetname = Read-Host "What subnet name would you like to use for the Managed Instance?"
+        Write-Host $valid.Message -ForegroundColor Yellow
+        $misubnetname = Read-Host $InstanceMessage
         $valid = AzureNetworkingNameValidation -Name $misubnetname
     }
 
-    $misubnetaddressrange = Read-Host "What address range would you like to use for the Managed Instance Subnet? (Must be included in the Virtual Network Subnet range of $vnetaddressrange)"
+    $InstanceMessage = "`r`nWhat address range would you like to use for the Managed Instance Subnet? (Must be included in the Virtual Network Subnet range of $vnetaddressrange)"
+    $misubnetaddressrange = Read-Host $InstanceMessage
     $valid = CIDRValidation -Name $misubnetaddressrange
     while(!($valid.Result)){
-        Write-Host $valid.Message -ForegroundColor Red
-        $misubnetaddressrange = Read-Host "What address range would you like to use for the Managed Instance Subnet? (Must be included in the Virtual Network Subnet range of $vnetaddressrange)"
+        Write-Host $valid.Message -ForegroundColor Yellow
+        $misubnetaddressrange = Read-Host $InstanceMessage
         $valid = CIDRValidation -Name $misubnetaddressrange
     }
     
-    Write-Host "Ok! That's everything, the deployment will take up to 3 hours, to confirm:"
+    Write-Host "`r`nOk! That's everything, Let's confirm:"
     $confirmtext = @"
 
     Resource Group Name:             $ResourceGroupName
@@ -154,12 +166,18 @@ function DeployManagedInstanceTemplate {
     Managed Instance Subnet Range:   $misubnetaddressrange
 
     To re-run in case of failure you can use:
+
+"@
+
+    $redeploytext = @"
     New-AzResourceGroupDeployment -ResourceGroupName `"$ResourceGroupName`" -TemplateFile `"$PSScriptRoot/../managedinstance/dpi30managedinstance.json`" -managedInstanceName `"$dbservername`" -managedInstanceAdminLogin `"$dbadminlogin`" -storageAccountName `"$storagename`" -dataFactoryName `"$dfname`" -dataFactoryRegion `"$DataFactoryRegion`" -jumpboxName `"$jumpboxname`" -jumpboxAdminUsername `"$vmadminlogin`" -jumpboxDnsLabelPrefix `"$vmdnsprefix`" -virtualNetworkName `"$vnetname`" -virtualNetworkAddressPrefix `"$vnetaddressrange`" -defaultSubnetName `"$vmsubnetname`" -defaultSubnetPrefix `"$vmsubnetaddressrange`" -managedInstanceSubnetName `"$misubnetname`" -managedInstanceSubnetPrefix `"$misubnetaddressrange`"
 "@
+
     Write-Host $confirmtext
-    $confirmation = Read-Host "Do you wish to continue? (y/n)"
+    Write-Host $redeploytext -ForegroundColor Cyan
+    $confirmation = ProceedValidation
     if ($confirmation -eq "y") {
-        Write-Host "Deploying Template..."
+        Write-Host "Deploying Template, the deployment will take up to 3 hours."
         New-AzResourceGroupDeployment -ResourceGroupName $ResourceGroupName -TemplateFile "$PSScriptRoot/../managedinstance/dpi30managedinstance.json" -managedInstanceName $dbservername -managedInstanceAdminLogin $dbadminlogin -managedInstanceAdminPassword $dbadminpassword -storageAccountName $storagename -dataFactoryName $dfname -dataFactoryRegion $DataFactoryRegion -jumpboxName $jumpboxname -jumpboxAdminUsername $vmadminlogin -jumpboxAdminPassword $vmadminpassword -jumpboxDnsLabelPrefix $vmdnsprefix -virtualNetworkName $vnetname -virtualNetworkAddressPrefix $vnetaddressrange -defaultSubnetName $vmsubnetname -defaultSubnetPrefix $vmsubnetaddressrange -managedInstanceSubnetName $misubnetname -managedInstanceSubnetPrefix $misubnetaddressrange
     }
 }

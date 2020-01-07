@@ -7,8 +7,6 @@ Function that will walk through all the required information to deploy the moder
 #>
 
 $datawarehousedescription = @"
-`r`nBased on your answers we suggest the Modern Data Warehouse template.
-It will deploy the following to your selected Azure Subscription:
     * Azure Data Factory
     * Azure Data Lake Gen 2
     * Azure Databricks
@@ -26,57 +24,63 @@ function DeployDWTemplate {
    
     Write-Host "`r`nNow let's get the Modern Data Warehouse template deployed, just a few questions and we can get this kicked off."
     
-    $dbservername = Read-Host "What would you like to name the Database Server?"
+    $InstanceMessage = "`r`nWhat would you like to name the Data Warehouse Server?"
+    $dbservername = Read-Host $InstanceMessage
     $valid = DatabaseServerNameValidation -Name $dbservername
     while(!($valid.Result)){
         # Validation loop (Keep trying until you get the name right)
         Write-Host $valid.Message -ForegroundColor Red
-        $dbservername = Read-Host "What would you like to name the Database Server?"
+        $dbservername = Read-Host $InstanceMessage
         $valid = DatabaseServerNameValidation -Name $dbservername
     }
 
-    $dbadminlogin = Read-Host "What username would you like to use for the Database Server?"
+    $InstanceMessage = "`r`nWhat username would you like to use for the Data Warehouse Server?"
+    $dbadminlogin = Read-Host $InstanceMessage
     $valid = DatabaseLoginNameValidation -Name $dbadminlogin
     while(!($valid.Result)){
         Write-Host $valid.Message -ForegroundColor Red
-        $dbadminlogin = Read-Host "What username would you like to use for the Database Server?"
+        $dbadminlogin = Read-Host $InstanceMessage
         $valid = DatabaseLoginNameValidation -Name $dbadminlogin
     }
 
     $dbadminpassword = Read-Host "Password" -AsSecureString
     
-    $dwname = Read-Host "What would you like to name the Data Warehouse?"
+    $InstanceMessage = "`r`nWhat would you like to name the Data Warehouse?"
+    $dwname = Read-Host $InstanceMessage
     $valid = DatabaseNameValidation -Name $dwname
     while(!($valid.Result)){
         Write-Host $valid.Message -ForegroundColor Red
-        $dwname = Read-Host "What would you like to name the Data Warehouse?"
+        $dwname = Read-Host $InstanceMessage
         $valid = DatabaseNameValidation -Name $dwname
     }
 
-    $databricksname = Read-Host "What would you like to name the Databricks Workspace?"
+    $InstanceMessage = "`r`nWhat would you like to name the Databricks Workspace?"
+    $databricksname = Read-Host $InstanceMessage
     $valid = DatabricksNameValidation -Name $databricksname
     while(!($valid.Result)){
         Write-Host $valid.Message -ForegroundColor Red
-        $databricksname = Read-Host "What would you like to name the Databricks Workspace?"
+        $databricksname = Read-Host $InstanceMessage
         $valid = DatabricksNameValidation -Name $databricksname
     }
 
-    $storagename = Read-Host "What would you like to name the Data Lake storage account?"
+    $InstanceMessage = "`r`nWhat would you like to name the Data Lake storage account?"
+    $storagename = Read-Host $InstanceMessage
     $valid = StorageAccountNameValidation -Name $storagename
     while(!($valid.Result)){ 
         Write-Host $valid.Message -ForegroundColor Red
-        $storagename = Read-Host "What would you like to name the Data Lake storage account?"
+        $storagename = Read-Host $InstanceMessage
         $valid = StorageAccountNameValidation -Name $storagename
     }
 
-    $dfname = Read-Host "What would you like to name the Data Factory?"
+    $InstanceMessage = "`r`nWhat would you like to name the Data Factory?"
+    $dfname = Read-Host $InstanceMessage
     $valid = DataFactoryNameValidation -Name $dfname 
     while(!($valid.Result)){ 
         Write-Host $valid.Message -ForegroundColor Red
-        $dfname = Read-Host "What would you like to name the Data Factory?"
+        $dfname = Read-Host $InstanceMessage
         $valid = DataFactoryNameValidation -Name $dfname 
     }
-    Write-Host "Ok! That's everything, the deployment will take a few minutes, to confirm:"
+    Write-Host "`r`nOk! That's everything, Let's confirm:"
     $confirmtext = @"
 
     Resource Group Name:             $ResourceGroupName
@@ -88,12 +92,18 @@ function DeployDWTemplate {
     Data Factory Name:               $dfname
 
     To re-run in case of failure you can use:
+
+"@
+
+    $redeploytext = @"
     New-AzResourceGroupDeployment -ResourceGroupName `"$ResourceGroupName`" -TemplateFile `"$PSScriptRoot/../moderndatawarehouse/dpi30moderndatawarehouse.json`" -azureSqlServerName `"$dbservername`" -azureSqlServerAdminLogin `"$dbadminlogin`" -azureSqlDataWarehouseName `"$dwname`" -databricksWorkspaceName `"$databricksname`" -storageAccountName `"$storagename`" -dataFactoryName `"$dfname`" -dataFactoryRegion `"$DataFactoryRegion`"
 "@
+
     Write-Host $confirmtext
-    $confirmation = Read-Host "Do you wish to continue? (y/n)"
+    Write-Host $redeploytext -ForegroundColor Cyan
+    $confirmation = ProceedValidation
     if ($confirmation -eq "y") {
-        Write-Host "Deploying Template..."
+        Write-Host "Deploying Template, the deployment will take a few minutes..."
         New-AzResourceGroupDeployment -ResourceGroupName $ResourceGroupName -TemplateFile "$PSScriptRoot/../moderndatawarehouse/dpi30moderndatawarehouse.json" -azureSqlServerName $dbservername -azureSqlServerAdminLogin $dbadminlogin -azureSqlServerAdminPassword $dbadminpassword -azureSqlDataWarehouseName $dwname -databricksWorkspaceName $databricksname -storageAccountName $storagename -dataFactoryName $dfname -dataFactoryRegion $DataFactoryRegion
     }
 }
