@@ -20,7 +20,8 @@ Describe "DPi30 Simple Deployment Tests" {
               -TemplateParameterObject $Parameters `
               -ErrorAction Stop `
                5>&1
-               
+    Write-Host $output
+    Write-Host $DebugPreference
     $outstring = [string]::Concat($output[27])
     $outjson = (($outstring -split "Body:")[1] | ConvertFrom-Json)
     $result = $outjson.properties
