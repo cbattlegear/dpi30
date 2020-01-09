@@ -1,7 +1,7 @@
 Param(
-  [string] [Parameter(Mandatory=$true)] $ResourceGroupName,
-  [string] [Parameter(Mandatory=$true)] $TemplateFile,
-  [hashtable] [Parameter(Mandatory=$true)] $Parameters
+  [string] [Parameter(Mandatory = $true)] $ResourceGroupName,
+  [string] [Parameter(Mandatory = $true)] $TemplateFile,
+  [hashtable] [Parameter(Mandatory = $true)] $Parameters
 )
 
 Describe "DPi30 Simple Deployment Tests" {
@@ -15,16 +15,17 @@ Describe "DPi30 Simple Deployment Tests" {
 
   Context "When Simple deployed with parameters" {
     $output = Test-AzResourceGroupDeployment `
-              -ResourceGroupName $ResourceGroupName `
-              -TemplateFile $TemplateFile `
-              -TemplateParameterObject $Parameters `
-              -ErrorAction Stop `
-               5>&1
-    Write-Host $output
-    Write-Host $DebugPreference
-    $outstring = [string]::Concat($output[27])
-    Write-Host $outstring
-    Write-Host ($outstring -split "Body:")[1]
+      -ResourceGroupName $ResourceGroupName `
+      -TemplateFile $TemplateFile `
+      -TemplateParameterObject $Parameters `
+      -ErrorAction Stop `
+      5>&1
+    $outstring = ""
+    # Find our Response information to get proper information since the amount of information returned can be variable
+    foreach ($out in $output) {
+      if ($out -match "============================ HTTP RESPONSE ============================") { $outstring = $out }
+    }
+    
     $outjson = (($outstring -split "Body:")[1] | ConvertFrom-Json)
     $result = $outjson.properties
 
