@@ -23,6 +23,8 @@ Describe "DPi30 Simple Deployment Tests" {
     Write-Host $output
     Write-Host $DebugPreference
     $outstring = [string]::Concat($output[27])
+    Write-Host $outstring
+    Write-Host ($outstring -split "Body:")[1]
     $outjson = (($outstring -split "Body:")[1] | ConvertFrom-Json)
     $result = $outjson.properties
 
