@@ -2,7 +2,7 @@
 This template is for smaller data estates that just need a place to consolidate their data into one place for reporting. 
 
 It will deploy: 
-* SQL Azure Database (Gen 5 2 Cores)
+* SQL Azure Hyperscale Database (Gen 5 2 Cores)
 * Azure Storage Account (Blob Storage)
 * Azure Data Factory
 
