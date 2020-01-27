@@ -35,3 +35,6 @@ Data Factory is the best option to orchestrate all this data movement and has th
 
 ### Why did you deploy a Virtual Machine?
 Since Managed Instance is contained within a Virtual Network the safest way to access it is via a Jumpbox sitting inside the same Virtual Network.
+
+### Why did you use a separate virtual network?
+Because of the complexity of network routes and subnet requirements for Managed Instance it is easier to have it be in it's own vNet and then peer the network to your current vNet.
