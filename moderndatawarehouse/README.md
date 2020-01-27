@@ -22,6 +22,7 @@ After deploying the template you will want to start getting data into your data 
 * [Data loading strategies for Azure SQL Data Warehouse](https://docs.microsoft.com/en-us/azure/sql-data-warehouse/design-elt-data-loading)
 * [Create an Azure Databricks Spark cluster](https://docs.microsoft.com/en-us/azure/storage/blobs/data-lake-storage-quickstart-create-databricks-account#create-a-spark-cluster-in-databricks)
 * [Run a Databricks notebook with the Databricks Notebook Activity in Azure Data Factory](https://docs.microsoft.com/en-us/azure/data-factory/transform-data-using-databricks-notebook)
+* [Enable vNet Peering](https://docs.microsoft.com/en-us/azure/virtual-network/virtual-network-manage-peering)
 
 ## Rationale
 
@@ -39,3 +40,6 @@ We are deploying 200c to a) Get multiple nodes for data warehouse processing (ea
 
 ### Why did you deploy Data Factory?
 Data Factory is the best option to orchestrate all this data movement and has the best options for moving data from one place to another quickly and easily.
+
+### Why did you use a separate virtual network?
+Because of the complexity of network routes and subnet requirements for Managed Instance it is easier to have it be in it's own vNet and then peer the network to your current vNet.
