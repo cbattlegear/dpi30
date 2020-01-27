@@ -20,6 +20,7 @@ After deploying the simple template you will want to start getting data into you
 * [Copy data to and from Azure SQL Database Managed Instance by using Azure Data Factory](https://docs.microsoft.com/en-us/azure/data-factory/connector-azure-sql-database-managed-instance)
 * [Create and configure a self-hosted integration runtime](https://docs.microsoft.com/en-us/azure/data-factory/create-self-hosted-integration-runtime)
 * [Columnstore Indexes](https://docs.microsoft.com/en-us/sql/relational-databases/indexes/columnstore-indexes-overview?view=sql-server-ver15)
+* [Enable vNet Peering](https://docs.microsoft.com/en-us/azure/virtual-network/virtual-network-manage-peering)
 
 ## Rationale
 
