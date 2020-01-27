@@ -37,6 +37,5 @@ High speed processing of structured data. It's the best landing point to handle 
 ### Why are you deploying DW200c instead of DW100?
 We are deploying 200c to a) Get multiple nodes for data warehouse processing (each 100 DWU equals 1 compute node) and b) use Gen 2 Data Warehouse which comes with several performance and caching improvements.
 
-
-### Why did you use a separate virtual network?
-Because of the complexity of network routes and subnet requirements for Managed Instance it is easier to have it be in it's own vNet and then peer the network to your current vNet.
+### Why did you deploy Data Factory?
+Data Factory is the best option to orchestrate all this data movement and has the best options for moving data from one place to another quickly and easily.
